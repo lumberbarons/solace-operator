@@ -1,0 +1,33 @@
+apiVersion: solace.lmbrn.ca/v1alpha1
+kind: SolaceQueue
+metadata:
+  name: test-queue-1
+spec:
+  topicSubscriptions:
+    - test/topic1
+    - test/topic2
+---
+apiVersion: solace.lmbrn.ca/v1alpha1
+kind: SolaceQueue
+metadata:
+  name: test-queue-2
+spec:
+  accessType: non-exclusive
+  topicSubscriptions:
+    - test/topic1
+    - test/topic2
+---
+apiVersion: solace.lmbrn.ca/v1alpha1
+kind: SolaceRdp
+metadata:
+  name: test-rdp
+spec:
+  consumers:
+    - host: echoserver.echoserver
+      tlsEnabled: false
+      connectionCount: 3
+  queueBindings:
+    - queueName: test-queue-1
+      postRequestTarget: /test-one
+    - queueName: test-queue-2
+      postRequestTarget: /test-two

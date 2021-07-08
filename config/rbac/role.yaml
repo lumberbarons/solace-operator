@@ -1,0 +1,60 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - solace.lmbrn.ca
+  resources:
+  - solacequeues
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - solace.lmbrn.ca
+  resources:
+  - solacequeues/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - solace.lmbrn.ca
+  resources:
+  - solacequeues/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - solace.lmbrn.ca
+  resources:
+  - solacerdps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - solace.lmbrn.ca
+  resources:
+  - solacerdps/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - solace.lmbrn.ca
+  resources:
+  - solacerdps/status
+  verbs:
+  - get
+  - patch
+  - update

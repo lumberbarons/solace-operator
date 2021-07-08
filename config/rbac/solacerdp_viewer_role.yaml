@@ -1,0 +1,20 @@
+# permissions for end users to view solacerdps.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: solacerdp-viewer-role
+rules:
+- apiGroups:
+  - solace.lmbrn.ca
+  resources:
+  - solacerdps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - solace.lmbrn.ca
+  resources:
+  - solacerdps/status
+  verbs:
+  - get

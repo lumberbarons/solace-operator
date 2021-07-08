@@ -1,0 +1,14 @@
+apiVersion: solace.lmbrn.ca/v1alpha1
+kind: SolaceRdp
+metadata:
+  name: solacerdp-first
+spec:
+  clientProfile: default
+  consumers:
+    - host: webhook.site
+      port: 443
+      httpMethod: POST
+      tlsEnabled: true
+  queueBindings:
+    - queueName: test-queue-1
+      postRequestTarget: /25c358bb-32a4-4967-9717-ace80722565f

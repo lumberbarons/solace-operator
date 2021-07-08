@@ -1,0 +1,7 @@
+apiVersion: solace.lmbrn.ca/v1alpha1
+kind: SolaceQueue
+metadata:
+  name: solacequeue-sample
+spec:
+  topicSubscriptions:
+    - sample/topic
