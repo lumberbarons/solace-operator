@@ -8,7 +8,7 @@ metadata:
     {{- include "solace-operator.labels" . | nindent 4 }}
 rules:
 - apiGroups:
-  -  solace.lmbrn.ca/v1alpha1
+  -  solace.lmbrn.ca
   resources:
   - solacequeues
   - solacequeues/status

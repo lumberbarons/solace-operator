@@ -17,7 +17,6 @@ limitations under the License.
 package controllers
 
 import (
-	"fmt"
 	"net/url"
 	"os"
 	"strconv"
@@ -271,8 +270,6 @@ func (r *SolaceRdpReconciler) reconcileConsumers(ctx context.Context, solacerdp 
 func (r *SolaceRdpReconciler) createOrUpdateRdpConsumer(ctx context.Context, solacerdp *solacev1alpha1.SolaceRdp,
 	consumer solacev1alpha1.SolaceRdpConsumer) error {
 	log := ctrllog.FromContext(ctx)
-
-	fmt.Printf("\n\nCONSUMER %v\n\n", consumer)
 
 	rdpName := solacerdp.ObjectMeta.Name
 	rdpHttpMethod := strings.ToLower(consumer.HttpMethod)

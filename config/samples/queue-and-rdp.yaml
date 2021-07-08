@@ -23,8 +23,8 @@ metadata:
   name: test-rdp
 spec:
   consumers:
-    - host: echoserver.echoserver
-      tlsEnabled: false
+    - host: example.com
+      tlsEnabled: true
       connectionCount: 3
   queueBindings:
     - queueName: test-queue-1
