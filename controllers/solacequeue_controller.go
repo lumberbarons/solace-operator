@@ -211,7 +211,7 @@ func contains(s []string, str string) bool {
 // SetupWithManager sets up the controller with the Manager.
 func (r *SolaceQueueReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	cfg := semp.NewConfiguration()
-	cfg.BasePath = os.Getenv("SEMP_BASEPATH") + "/SEMP/v2/config"
+	cfg.BasePath = os.Getenv("SEMP_URL") + "/SEMP/v2/config"
 	r.sempClient = semp.NewAPIClient(cfg)
 
 	r.sempAuth = context.WithValue(context.Background(), semp.ContextBasicAuth, semp.BasicAuth{

@@ -23,3 +23,7 @@ _testmain.go
 *.test
 *.prof
 bin
+testbin
+cover.out
+
+charts/values.yaml

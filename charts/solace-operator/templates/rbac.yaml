@@ -1,0 +1,34 @@
+
+{{- if .Values.serviceAccount.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "solace-operator.fullname" . }}
+  labels:
+    {{- include "solace-operator.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  -  solace.lmbrn.ca/v1alpha1
+  resources:
+  - solacequeues
+  - solacequeues/status
+  - solacerdps
+  - solacerdps/status
+  verbs:
+  - "*"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "solace-operator.fullname" . }}
+  labels:
+    {{- include "solace-operator.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "solace-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "solace-operator.fullname" . }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

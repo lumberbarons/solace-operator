@@ -387,11 +387,11 @@ func (r *SolaceRdpReconciler) createOrUpdateQueueBinding(ctx context.Context,
 // SetupWithManager sets up the controller with the Manager.
 func (r *SolaceRdpReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	cfg := semp.NewConfiguration()
-	cfg.BasePath = os.Getenv("SEMP_BASEPATH") + "/SEMP/v2/config"
+	cfg.BasePath = os.Getenv("SEMP_URL") + "/SEMP/v2/config"
 	r.sempClient = semp.NewAPIClient(cfg)
 
 	cfgMon := sempmon.NewConfiguration()
-	cfgMon.BasePath = os.Getenv("SEMP_BASEPATH") + "/SEMP/v2/monitor"
+	cfgMon.BasePath = os.Getenv("SEMP_URL") + "/SEMP/v2/monitor"
 	r.sempMonClient = sempmon.NewAPIClient(cfgMon)
 
 	r.sempAuth = context.WithValue(context.Background(), semp.ContextBasicAuth, semp.BasicAuth{
