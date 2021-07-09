@@ -5,6 +5,9 @@
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
 VERSION ?= 0.1.0
 
+# ARCH defines the architecture to build (e.g make docker-buildx ARCH=ppc64le)
+ARCH ?= arm64
+
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
 # To re-generate a bundle for other specific channels without changing the standard setup, you can:
@@ -100,7 +103,13 @@ run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 docker-build: test ## Build docker image with the manager.
-	docker buildx build --platform linux/arm64 -t ${IMG} --push .
+	docker build . -t ${IMG}
+
+docker-push: ## Push the docker image.
+	docker push ${IMG}
+
+docker-buildx: test ## Build docker image with the manager then push (using buildx).
+	docker buildx build --platform linux/${ARCH} -t ${IMG} --push .
 
 ##@ Deployment
 

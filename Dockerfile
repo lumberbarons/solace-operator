@@ -17,7 +17,7 @@ COPY sempv2-config/ sempv2-config/
 COPY sempv2-monitor/ sempv2-monitor/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o manager main.go
+RUN CGO_ENABLED=0 go build -a -o manager main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
