@@ -16,6 +16,7 @@ Or, if you want to build it for a different arch, you can do this:
 
 ```bash
 make docker-buildx ARCH=arm64 IMG="registry/solace-operator:v0.1.0"
+```
 
 Next, you can install the operator (with the CRDs) with the Helm chart. First, you need some values:
 
@@ -36,7 +37,7 @@ solaceBroker:
 Then, install the thing:
 
 ```bash
-helm install test ./charts/solace-operator -f values.yaml
+helm install solopr ./charts/solace-operator -f values.yaml
 ```
 
 Finally, you can use the example yaml to create some queues and a REST delivery point:
