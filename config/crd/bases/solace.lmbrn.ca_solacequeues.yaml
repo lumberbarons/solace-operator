@@ -16,7 +16,16 @@ spec:
     singular: solacequeue
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: The access type of the queue
+      jsonPath: .spec.accessType
+      name: Access Type
+      type: string
+    - description: The operational state of the queue
+      jsonPath: .status.operationalState
+      name: State
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: SolaceQueue is the Schema for the solacequeues API
@@ -50,8 +59,8 @@ spec:
           status:
             description: SolaceQueueStatus defines the observed state of SolaceQueue
             properties:
-              ready:
-                type: boolean
+              operationalState:
+                type: string
             type: object
         type: object
     served: true

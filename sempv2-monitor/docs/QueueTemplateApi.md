@@ -1,4 +1,4 @@
-# {{classname}}
+# \QueueTemplateApi
 
 All URIs are relative to *http://www.solace.com/SEMP/v2/monitor*
 
@@ -7,28 +7,64 @@ Method | HTTP request | Description
 [**GetMsgVpnQueueTemplate**](QueueTemplateApi.md#GetMsgVpnQueueTemplate) | **Get** /msgVpns/{msgVpnName}/queueTemplates/{queueTemplateName} | Get a Queue Template object.
 [**GetMsgVpnQueueTemplates**](QueueTemplateApi.md#GetMsgVpnQueueTemplates) | **Get** /msgVpns/{msgVpnName}/queueTemplates | Get a list of Queue Template objects.
 
-# **GetMsgVpnQueueTemplate**
-> MsgVpnQueueTemplateResponse GetMsgVpnQueueTemplate(ctx, msgVpnName, queueTemplateName, optional)
+
+
+## GetMsgVpnQueueTemplate
+
+> MsgVpnQueueTemplateResponse GetMsgVpnQueueTemplate(ctx, msgVpnName, queueTemplateName).Select_(select_).Execute()
+
 Get a Queue Template object.
 
-Get a Queue Template object.  A Queue Template provides a mechanism for specifying the initial state for client created queues.   Attribute|Identifying|Deprecated :---|:---:|:---: msgVpnName|x| queueTemplateName|x|    A SEMP client authorized with a minimum access scope/level of \"vpn/read-only\" is required to perform this operation.  This has been available since 2.14.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    msgVpnName := "msgVpnName_example" // string | The name of the Message VPN.
+    queueTemplateName := "queueTemplateName_example" // string | The name of the Queue Template.
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.QueueTemplateApi.GetMsgVpnQueueTemplate(context.Background(), msgVpnName, queueTemplateName).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `QueueTemplateApi.GetMsgVpnQueueTemplate``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetMsgVpnQueueTemplate`: MsgVpnQueueTemplateResponse
+    fmt.Fprintf(os.Stdout, "Response from `QueueTemplateApi.GetMsgVpnQueueTemplate`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **msgVpnName** | **string**| The name of the Message VPN. | 
-  **queueTemplateName** | **string**| The name of the Queue Template. | 
- **optional** | ***QueueTemplateApiGetMsgVpnQueueTemplateOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**msgVpnName** | **string** | The name of the Message VPN. | 
+**queueTemplateName** | **string** | The name of the Queue Template. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a QueueTemplateApiGetMsgVpnQueueTemplateOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetMsgVpnQueueTemplateRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -40,34 +76,73 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetMsgVpnQueueTemplates**
-> MsgVpnQueueTemplatesResponse GetMsgVpnQueueTemplates(ctx, msgVpnName, optional)
+
+## GetMsgVpnQueueTemplates
+
+> MsgVpnQueueTemplatesResponse GetMsgVpnQueueTemplates(ctx, msgVpnName).Count(count).Cursor(cursor).Where(where).Select_(select_).Execute()
+
 Get a list of Queue Template objects.
 
-Get a list of Queue Template objects.  A Queue Template provides a mechanism for specifying the initial state for client created queues.   Attribute|Identifying|Deprecated :---|:---:|:---: msgVpnName|x| queueTemplateName|x|    A SEMP client authorized with a minimum access scope/level of \"vpn/read-only\" is required to perform this operation.  This has been available since 2.14.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    msgVpnName := "msgVpnName_example" // string | The name of the Message VPN.
+    count := int32(56) // int32 | Limit the count of objects in the response. See the documentation for the `count` parameter. (optional) (default to 10)
+    cursor := "cursor_example" // string | The cursor, or position, for the next page of objects. See the documentation for the `cursor` parameter. (optional)
+    where := []string{"Inner_example"} // []string | Include in the response only objects where certain conditions are true. See the the documentation for the `where` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.QueueTemplateApi.GetMsgVpnQueueTemplates(context.Background(), msgVpnName).Count(count).Cursor(cursor).Where(where).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `QueueTemplateApi.GetMsgVpnQueueTemplates``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetMsgVpnQueueTemplates`: MsgVpnQueueTemplatesResponse
+    fmt.Fprintf(os.Stdout, "Response from `QueueTemplateApi.GetMsgVpnQueueTemplates`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **msgVpnName** | **string**| The name of the Message VPN. | 
- **optional** | ***QueueTemplateApiGetMsgVpnQueueTemplatesOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**msgVpnName** | **string** | The name of the Message VPN. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a QueueTemplateApiGetMsgVpnQueueTemplatesOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetMsgVpnQueueTemplatesRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
- **count** | **optional.Int32**| Limit the count of objects in the response. See the documentation for the &#x60;count&#x60; parameter. | [default to 10]
- **cursor** | **optional.String**| The cursor, or position, for the next page of objects. See the documentation for the &#x60;cursor&#x60; parameter. | 
- **where** | [**optional.Interface of []string**](string.md)| Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **count** | **int32** | Limit the count of objects in the response. See the documentation for the &#x60;count&#x60; parameter. | [default to 10]
+ **cursor** | **string** | The cursor, or position, for the next page of objects. See the documentation for the &#x60;cursor&#x60; parameter. | 
+ **where** | **[]string** | Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -79,8 +154,10 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 

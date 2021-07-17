@@ -128,7 +128,7 @@ func (r *SolaceRdpReconciler) deleteRdp(ctx context.Context, req ctrl.Request) (
 
 	rdpName := req.NamespacedName.Name
 	log.Info("Deleting rdp", "MsgVpnMame", r.msgVpnName, "RdpName", rdpName)
-	_, _, err := r.sempClient.MsgVpnApi.DeleteMsgVpnRestDeliveryPoint(r.sempAuth, r.msgVpnName, rdpName)
+	_, _, err := r.sempClient.MsgVpnApi.DeleteMsgVpnRestDeliveryPoint(r.sempAuth, r.msgVpnName, rdpName).Execute()
 	if err != nil {
 		log.Error(err, "Failed to delete rdp", "MsgVpnName", r.msgVpnName, "RdpName", rdpName)
 		return ctrl.Result{}, err
@@ -156,19 +156,19 @@ func (r *SolaceRdpReconciler) reconcileCreateOrUpdate(ctx context.Context, solac
 	}
 
 	rdpName := solacerdp.ObjectMeta.Name
-	sempResponse, _, err := r.sempMonClient.MsgVpnApi.GetMsgVpnRestDeliveryPoint(r.sempMonAuth, r.msgVpnName, rdpName, nil)
+	sempResponse, _, err := r.sempMonClient.MsgVpnApi.GetMsgVpnRestDeliveryPoint(r.sempMonAuth, r.msgVpnName, rdpName).Execute()
 	if err != nil {
 		log.Error(err, "Failed to get rdp status")
 		return ctrl.Result{}, err
 	}
 
 	solacerdp.Status.OperationalState = "Down"
-	if sempResponse.Data.Up {
+	if *sempResponse.Data.Up {
 		solacerdp.Status.OperationalState = "Up"
 	}
 
-	solacerdp.Status.LastFailureReason = sempResponse.Data.LastFailureReason
-	solacerdp.Status.LastFailureTime = time.Unix(int64(sempResponse.Data.LastFailureTime), 0).UTC().Format(time.RFC3339)
+	solacerdp.Status.LastFailureReason = *sempResponse.Data.LastFailureReason
+	solacerdp.Status.LastFailureTime = time.Unix(int64(*sempResponse.Data.LastFailureTime), 0).UTC().Format(time.RFC3339)
 
 	err = r.Status().Update(ctx, solacerdp)
 	if err != nil {
@@ -185,7 +185,7 @@ func (r *SolaceRdpReconciler) reconcileQueueBindings(ctx context.Context, solace
 	rdpName := solacerdp.ObjectMeta.Name
 
 	sempResponse, _, err := r.sempClient.MsgVpnApi.GetMsgVpnRestDeliveryPointQueueBindings(r.sempAuth,
-		r.msgVpnName, rdpName, nil)
+		r.msgVpnName, rdpName).Execute()
 
 	if err != nil {
 		return solaceError(ctx, err, "Failed to get rdp queue bindings",
@@ -193,9 +193,9 @@ func (r *SolaceRdpReconciler) reconcileQueueBindings(ctx context.Context, solace
 	}
 
 	var exQueueBindings []string
-	for idx := range sempResponse.Data {
-		rdpQueueBinding := &sempResponse.Data[idx]
-		exQueueBindings = append(exQueueBindings, rdpQueueBinding.QueueBindingName)
+	for idx := range *sempResponse.Data {
+		rdpQueueBinding := (*sempResponse.Data)[idx]
+		exQueueBindings = append(exQueueBindings, *rdpQueueBinding.QueueBindingName)
 	}
 
 	var queueBindings []string
@@ -211,7 +211,7 @@ func (r *SolaceRdpReconciler) reconcileQueueBindings(ctx context.Context, solace
 		if !contains(queueBindings, exQueueBinding) {
 			log.Info("Deleting queue binding", "MsgVpnMame", r.msgVpnName, "QueueName", exQueueBinding)
 			_, _, err := r.sempClient.MsgVpnApi.DeleteMsgVpnRestDeliveryPointQueueBinding(r.sempAuth,
-				r.msgVpnName, rdpName, url.PathEscape(exQueueBinding))
+				r.msgVpnName, rdpName, url.PathEscape(exQueueBinding)).Execute()
 			if err != nil {
 				return solaceError(ctx, err, "Failed to delete queue binding",
 					"MsgVpnName", r.msgVpnName, "QueueName", exQueueBinding)
@@ -228,7 +228,7 @@ func (r *SolaceRdpReconciler) reconcileConsumers(ctx context.Context, solacerdp 
 	rdpName := solacerdp.ObjectMeta.Name
 
 	sempResponse, _, err := r.sempClient.MsgVpnApi.GetMsgVpnRestDeliveryPointRestConsumers(r.sempAuth,
-		r.msgVpnName, rdpName, nil)
+		r.msgVpnName, rdpName).Execute()
 
 	if err != nil {
 		return solaceError(ctx, err, "Failed to get rdp consumers",
@@ -236,9 +236,9 @@ func (r *SolaceRdpReconciler) reconcileConsumers(ctx context.Context, solacerdp 
 	}
 
 	var exConsumers []string
-	for _, rdpConsumer := range sempResponse.Data {
-		rdpConsumerName := strings.ToLower(rdpConsumer.HttpMethod) + "-" +
-			rdpConsumer.RemoteHost + "-" + strconv.Itoa(int(rdpConsumer.RemotePort))
+	for _, rdpConsumer := range *sempResponse.Data {
+		rdpConsumerName := strings.ToLower(*rdpConsumer.HttpMethod) + "-" +
+			*rdpConsumer.RemoteHost + "-" + strconv.Itoa(int(*rdpConsumer.RemotePort))
 		exConsumers = append(exConsumers, rdpConsumerName)
 	}
 
@@ -256,7 +256,7 @@ func (r *SolaceRdpReconciler) reconcileConsumers(ctx context.Context, solacerdp 
 		if !contains(consumers, exConsumer) {
 			log.Info("Deleting rdp consumer", "MsgVpnMame", r.msgVpnName, "RdpConsumerName", exConsumer)
 			_, _, err := r.sempClient.MsgVpnApi.DeleteMsgVpnRestDeliveryPointRestConsumer(r.sempAuth,
-				r.msgVpnName, rdpName, url.PathEscape(exConsumer))
+				r.msgVpnName, rdpName, url.PathEscape(exConsumer)).Execute()
 			if err != nil {
 				return solaceError(ctx, err, "Failed to delete rdp consumer",
 					"MsgVpnName", r.msgVpnName, "RdpConsumerName", exConsumer)
@@ -275,20 +275,21 @@ func (r *SolaceRdpReconciler) createOrUpdateRdpConsumer(ctx context.Context, sol
 	rdpHttpMethod := strings.ToLower(consumer.HttpMethod)
 	rdpConsumerPort := int64(consumer.Port)
 	rdpConnCount := int32(consumer.ConnectionCount)
+	rdpEnabled := true
 
 	rdpConsumerName := rdpHttpMethod + "-" + consumer.Host + "-" + strconv.Itoa(consumer.Port)
 
 	_, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnRestDeliveryPointRestConsumer(r.sempAuth,
-		r.msgVpnName, rdpName, rdpConsumerName, nil)
+		r.msgVpnName, rdpName, rdpConsumerName).Execute()
 
 	if httpResponse.StatusCode != 200 {
-		rdpConsumer := semp.MsgVpnRestDeliveryPointRestConsumer{RestConsumerName: rdpConsumerName,
-			Enabled: true, RemoteHost: consumer.Host, RemotePort: rdpConsumerPort,
-			TlsEnabled: consumer.TlsEnabled, HttpMethod: rdpHttpMethod, OutgoingConnectionCount: rdpConnCount}
+		rdpConsumer := semp.MsgVpnRestDeliveryPointRestConsumer{RestConsumerName: &rdpConsumerName,
+			Enabled: &rdpEnabled, RemoteHost: &consumer.Host, RemotePort: &rdpConsumerPort,
+			TlsEnabled: &consumer.TlsEnabled, HttpMethod: &rdpHttpMethod, OutgoingConnectionCount: &rdpConnCount}
 
 		log.Info("Creating rdp consumer", "RdpName", rdpName, "RdpConsumer", rdpConsumer)
 		_, _, err := r.sempClient.RestDeliveryPointApi.CreateMsgVpnRestDeliveryPointRestConsumer(
-			r.sempAuth, rdpConsumer, r.msgVpnName, rdpName, nil)
+			r.sempAuth, r.msgVpnName, rdpName).Body(rdpConsumer).Execute()
 		if err != nil {
 			return solaceError(ctx, err, "Failed to create rdp consumer", "MsgVpnName", r.msgVpnName,
 				"RdpName", rdpName, "RdpConsumerName", rdpConsumerName)
@@ -324,28 +325,27 @@ func (r *SolaceRdpReconciler) createOrUpdateRdp(ctx context.Context, solacerdp *
 	log := ctrllog.FromContext(ctx)
 
 	rdpName := solacerdp.ObjectMeta.Name
+	rdpEnabled := true
 
-	sempResponse, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnRestDeliveryPoint(r.sempAuth, r.msgVpnName, rdpName, nil)
+	_, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnRestDeliveryPoint(r.sempAuth, r.msgVpnName, rdpName).Execute()
 
 	if httpResponse.StatusCode != 200 {
-		rdp := semp.MsgVpnRestDeliveryPoint{RestDeliveryPointName: rdpName,
-			ClientProfileName: solacerdp.Spec.ClientProfile, Enabled: true}
+		rdp := semp.MsgVpnRestDeliveryPoint{RestDeliveryPointName: &rdpName,
+			ClientProfileName: &solacerdp.Spec.ClientProfile, Enabled: &rdpEnabled}
 
 		log.Info("Creating rdp", "RdpName", rdpName)
-		_, _, err := r.sempClient.RestDeliveryPointApi.CreateMsgVpnRestDeliveryPoint(r.sempAuth, rdp, r.msgVpnName, nil)
+		_, _, err := r.sempClient.RestDeliveryPointApi.CreateMsgVpnRestDeliveryPoint(r.sempAuth, r.msgVpnName).Body(rdp).Execute()
 		if err != nil {
 			return solaceError(ctx, err, "Failed to create rdp", "MsgVpnName", r.msgVpnName, "RdpName", rdpName)
 		}
 	} else {
-		if sempResponse.Data.ClientProfileName != solacerdp.Spec.ClientProfile {
+		/* if sempResponse.Data.ClientProfileName != solacerdp.Spec.ClientProfile {
 			log.Info("Updating rdp", "RdpName", rdpName)
-		}
-
-		/* log.Info("Updating rdp", "RdpName", rdpName)
-		_, _, err := r.sempClient.RestDeliveryPointApi.UpdateMsgVpnRestDeliveryPoint(r.sempAuth, rdp, r.msgVpnName, rdpName, nil)
-		if err != nil {
-			log.Error(err, "Failed to update rdp", "MsgVpnName", r.msgVpnName, "RdpName", rdpName)
-			return err
+			_, _, err := r.sempClient.RestDeliveryPointApi.UpdateMsgVpnRestDeliveryPoint(r.sempAuth, rdp, r.msgVpnName, rdpName, nil)
+			if err != nil {
+				log.Error(err, "Failed to update rdp", "MsgVpnName", r.msgVpnName, "RdpName", rdpName)
+				return err
+			}
 		} */
 	}
 
@@ -360,22 +360,34 @@ func (r *SolaceRdpReconciler) createOrUpdateQueueBinding(ctx context.Context,
 	queueName := queueBinding.QueueName
 	postTarget := queueBinding.PostRequestTarget
 
-	_, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnRestDeliveryPointQueueBinding(
-		r.sempAuth, r.msgVpnName, rdpName, url.PathEscape(queueName), nil)
+	sempResponse, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnRestDeliveryPointQueueBinding(
+		r.sempAuth, r.msgVpnName, rdpName, url.PathEscape(queueName)).Execute()
+
+	rdpQueueBinding := semp.MsgVpnRestDeliveryPointQueueBinding{QueueBindingName: &queueName,
+		PostRequestTarget: &postTarget}
 
 	if httpResponse.StatusCode != 200 {
 		log.Info("Creating rdp queue binding", "RdpName", rdpName,
 			"QueueName", queueName, "PostTarget", postTarget)
 
-		rdpQueueBinding := semp.MsgVpnRestDeliveryPointQueueBinding{QueueBindingName: queueName, PostRequestTarget: postTarget}
 		_, _, err := r.sempClient.RestDeliveryPointApi.CreateMsgVpnRestDeliveryPointQueueBinding(
-			r.sempAuth, rdpQueueBinding, r.msgVpnName, rdpName, nil)
+			r.sempAuth, r.msgVpnName, rdpName).Body(rdpQueueBinding).Execute()
 		if err != nil {
 			return solaceError(ctx, err, "Failed to create queue binding", "MsgVpnName",
 				r.msgVpnName, "RdpName", rdpName, "QueueName", queueName)
 		}
 	} else {
-		// TODO
+		if *sempResponse.Data.PostRequestTarget != postTarget {
+			log.Info("Updating rdp queue binding", "RdpName", rdpName,
+				"QueueName", queueName, "PostTarget", postTarget)
+
+			_, _, err := r.sempClient.RestDeliveryPointApi.UpdateMsgVpnRestDeliveryPointQueueBinding(
+				r.sempAuth, r.msgVpnName, rdpName, queueName).Body(rdpQueueBinding).Execute()
+			if err != nil {
+				return solaceError(ctx, err, "Failed to update queue binding", "MsgVpnName",
+					r.msgVpnName, "RdpName", rdpName, "QueueName", queueName)
+			}
+		}
 	}
 
 	return nil
@@ -384,17 +396,19 @@ func (r *SolaceRdpReconciler) createOrUpdateQueueBinding(ctx context.Context,
 // SetupWithManager sets up the controller with the Manager.
 func (r *SolaceRdpReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	cfg := semp.NewConfiguration()
-	cfg.BasePath = os.Getenv("SEMP_URL") + "/SEMP/v2/config"
+	cfg.Scheme = "https"
+	cfg.Host = os.Getenv("SEMP_HOST")
 	r.sempClient = semp.NewAPIClient(cfg)
-
-	cfgMon := sempmon.NewConfiguration()
-	cfgMon.BasePath = os.Getenv("SEMP_URL") + "/SEMP/v2/monitor"
-	r.sempMonClient = sempmon.NewAPIClient(cfgMon)
 
 	r.sempAuth = context.WithValue(context.Background(), semp.ContextBasicAuth, semp.BasicAuth{
 		UserName: os.Getenv("SEMP_USERNAME"),
 		Password: os.Getenv("SEMP_PASSWORD"),
 	})
+
+	cfgMon := sempmon.NewConfiguration()
+	cfgMon.Scheme = "https"
+	cfgMon.Host = os.Getenv("SEMP_HOST")
+	r.sempMonClient = sempmon.NewAPIClient(cfgMon)
 
 	r.sempMonAuth = context.WithValue(context.Background(), sempmon.ContextBasicAuth, sempmon.BasicAuth{
 		UserName: os.Getenv("SEMP_USERNAME"),

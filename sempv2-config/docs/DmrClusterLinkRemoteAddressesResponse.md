@@ -1,11 +1,103 @@
 # DmrClusterLinkRemoteAddressesResponse
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Data** | [**[]DmrClusterLinkRemoteAddress**](DmrClusterLinkRemoteAddress.md) |  | [optional] [default to null]
-**Links** | [**[]DmrClusterLinkRemoteAddressLinks**](DmrClusterLinkRemoteAddressLinks.md) |  | [optional] [default to null]
-**Meta** | [***SempMeta**](SempMeta.md) |  | [default to null]
+**Data** | Pointer to [**[]DmrClusterLinkRemoteAddress**](DmrClusterLinkRemoteAddress.md) |  | [optional] 
+**Links** | Pointer to [**[]DmrClusterLinkRemoteAddressLinks**](DmrClusterLinkRemoteAddressLinks.md) |  | [optional] 
+**Meta** | [**SempMeta**](SempMeta.md) |  | 
+
+## Methods
+
+### NewDmrClusterLinkRemoteAddressesResponse
+
+`func NewDmrClusterLinkRemoteAddressesResponse(meta SempMeta, ) *DmrClusterLinkRemoteAddressesResponse`
+
+NewDmrClusterLinkRemoteAddressesResponse instantiates a new DmrClusterLinkRemoteAddressesResponse object
+This constructor will assign default values to properties that have it defined,
+and makes sure properties required by API are set, but the set of arguments
+will change when the set of required properties is changed
+
+### NewDmrClusterLinkRemoteAddressesResponseWithDefaults
+
+`func NewDmrClusterLinkRemoteAddressesResponseWithDefaults() *DmrClusterLinkRemoteAddressesResponse`
+
+NewDmrClusterLinkRemoteAddressesResponseWithDefaults instantiates a new DmrClusterLinkRemoteAddressesResponse object
+This constructor will only assign default values to properties that have it defined,
+but it doesn't guarantee that properties required by API are set
+
+### GetData
+
+`func (o *DmrClusterLinkRemoteAddressesResponse) GetData() []DmrClusterLinkRemoteAddress`
+
+GetData returns the Data field if non-nil, zero value otherwise.
+
+### GetDataOk
+
+`func (o *DmrClusterLinkRemoteAddressesResponse) GetDataOk() (*[]DmrClusterLinkRemoteAddress, bool)`
+
+GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetData
+
+`func (o *DmrClusterLinkRemoteAddressesResponse) SetData(v []DmrClusterLinkRemoteAddress)`
+
+SetData sets Data field to given value.
+
+### HasData
+
+`func (o *DmrClusterLinkRemoteAddressesResponse) HasData() bool`
+
+HasData returns a boolean if a field has been set.
+
+### GetLinks
+
+`func (o *DmrClusterLinkRemoteAddressesResponse) GetLinks() []DmrClusterLinkRemoteAddressLinks`
+
+GetLinks returns the Links field if non-nil, zero value otherwise.
+
+### GetLinksOk
+
+`func (o *DmrClusterLinkRemoteAddressesResponse) GetLinksOk() (*[]DmrClusterLinkRemoteAddressLinks, bool)`
+
+GetLinksOk returns a tuple with the Links field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetLinks
+
+`func (o *DmrClusterLinkRemoteAddressesResponse) SetLinks(v []DmrClusterLinkRemoteAddressLinks)`
+
+SetLinks sets Links field to given value.
+
+### HasLinks
+
+`func (o *DmrClusterLinkRemoteAddressesResponse) HasLinks() bool`
+
+HasLinks returns a boolean if a field has been set.
+
+### GetMeta
+
+`func (o *DmrClusterLinkRemoteAddressesResponse) GetMeta() SempMeta`
+
+GetMeta returns the Meta field if non-nil, zero value otherwise.
+
+### GetMetaOk
+
+`func (o *DmrClusterLinkRemoteAddressesResponse) GetMetaOk() (*SempMeta, bool)`
+
+GetMetaOk returns a tuple with the Meta field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetMeta
+
+`func (o *DmrClusterLinkRemoteAddressesResponse) SetMeta(v SempMeta)`
+
+SetMeta sets Meta field to given value.
+
+
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
 

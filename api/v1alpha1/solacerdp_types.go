@@ -52,6 +52,10 @@ type SolaceRdpStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Client Profile",type="string",JSONPath=".spec.clientProfile",description="The client profile used by the RDP"
+//+kubebuilder:printcolumn:name="State",type="string",JSONPath=".status.operationalState",description="The operational state of the RDP"
+//+kubebuilder:printcolumn:name="Last Failure Reason",type="string",JSONPath=".status.lastFailureReason",description="The reason for the last failure"
+//+kubebuilder:printcolumn:name="Last Failure Time",type="string",JSONPath=".status.lastFailureTime",description="The time of the last failure"
 
 // SolaceRdp is the Schema for the solacerdps API
 type SolaceRdp struct {

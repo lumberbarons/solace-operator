@@ -1,4 +1,4 @@
-# {{classname}}
+# \CertAuthorityApi
 
 All URIs are relative to *http://www.solace.com/SEMP/v2/monitor*
 
@@ -9,27 +9,61 @@ Method | HTTP request | Description
 [**GetCertAuthorityOcspTlsTrustedCommonName**](CertAuthorityApi.md#GetCertAuthorityOcspTlsTrustedCommonName) | **Get** /certAuthorities/{certAuthorityName}/ocspTlsTrustedCommonNames/{ocspTlsTrustedCommonName} | Get an OCSP Responder Trusted Common Name object.
 [**GetCertAuthorityOcspTlsTrustedCommonNames**](CertAuthorityApi.md#GetCertAuthorityOcspTlsTrustedCommonNames) | **Get** /certAuthorities/{certAuthorityName}/ocspTlsTrustedCommonNames | Get a list of OCSP Responder Trusted Common Name objects.
 
-# **GetCertAuthorities**
-> CertAuthoritiesResponse GetCertAuthorities(ctx, optional)
+
+
+## GetCertAuthorities
+
+> CertAuthoritiesResponse GetCertAuthorities(ctx).Count(count).Cursor(cursor).Where(where).Select_(select_).Execute()
+
 Get a list of Certificate Authority objects.
 
-Get a list of Certificate Authority objects.  Clients can authenticate with the message broker over TLS by presenting a valid client certificate. The message broker authenticates the client certificate by constructing a full certificate chain (from the client certificate to intermediate CAs to a configured root CA). The intermediate CAs in this chain can be provided by the client, or configured in the message broker. The root CA must be configured on the message broker.   Attribute|Identifying|Deprecated :---|:---:|:---: certAuthorityName|x|x certContent||x crlDayList||x crlLastDownloadTime||x crlLastFailureReason||x crlLastFailureTime||x crlNextDownloadTime||x crlTimeList||x crlUp||x crlUrl||x ocspLastFailureReason||x ocspLastFailureTime||x ocspLastFailureUrl||x ocspNonResponderCertEnabled||x ocspOverrideUrl||x ocspTimeout||x revocationCheckEnabled||x    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been deprecated since 2.19. Replaced by clientCertAuthorities and domainCertAuthorities.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    count := int32(56) // int32 | Limit the count of objects in the response. See the documentation for the `count` parameter. (optional) (default to 10)
+    cursor := "cursor_example" // string | The cursor, or position, for the next page of objects. See the documentation for the `cursor` parameter. (optional)
+    where := []string{"Inner_example"} // []string | Include in the response only objects where certain conditions are true. See the the documentation for the `where` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.CertAuthorityApi.GetCertAuthorities(context.Background()).Count(count).Cursor(cursor).Where(where).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `CertAuthorityApi.GetCertAuthorities``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetCertAuthorities`: CertAuthoritiesResponse
+    fmt.Fprintf(os.Stdout, "Response from `CertAuthorityApi.GetCertAuthorities`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetCertAuthoritiesRequest struct via the builder pattern
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***CertAuthorityApiGetCertAuthoritiesOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a CertAuthorityApiGetCertAuthoritiesOpts struct
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **count** | **optional.Int32**| Limit the count of objects in the response. See the documentation for the &#x60;count&#x60; parameter. | [default to 10]
- **cursor** | **optional.String**| The cursor, or position, for the next page of objects. See the documentation for the &#x60;cursor&#x60; parameter. | 
- **where** | [**optional.Interface of []string**](string.md)| Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **count** | **int32** | Limit the count of objects in the response. See the documentation for the &#x60;count&#x60; parameter. | [default to 10]
+ **cursor** | **string** | The cursor, or position, for the next page of objects. See the documentation for the &#x60;cursor&#x60; parameter. | 
+ **where** | **[]string** | Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -41,31 +75,67 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetCertAuthority**
-> CertAuthorityResponse GetCertAuthority(ctx, certAuthorityName, optional)
+
+## GetCertAuthority
+
+> CertAuthorityResponse GetCertAuthority(ctx, certAuthorityName).Select_(select_).Execute()
+
 Get a Certificate Authority object.
 
-Get a Certificate Authority object.  Clients can authenticate with the message broker over TLS by presenting a valid client certificate. The message broker authenticates the client certificate by constructing a full certificate chain (from the client certificate to intermediate CAs to a configured root CA). The intermediate CAs in this chain can be provided by the client, or configured in the message broker. The root CA must be configured on the message broker.   Attribute|Identifying|Deprecated :---|:---:|:---: certAuthorityName|x|x certContent||x crlDayList||x crlLastDownloadTime||x crlLastFailureReason||x crlLastFailureTime||x crlNextDownloadTime||x crlTimeList||x crlUp||x crlUrl||x ocspLastFailureReason||x ocspLastFailureTime||x ocspLastFailureUrl||x ocspNonResponderCertEnabled||x ocspOverrideUrl||x ocspTimeout||x revocationCheckEnabled||x    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been deprecated since 2.19. Replaced by clientCertAuthorities and domainCertAuthorities.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    certAuthorityName := "certAuthorityName_example" // string | The name of the Certificate Authority.
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.CertAuthorityApi.GetCertAuthority(context.Background(), certAuthorityName).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `CertAuthorityApi.GetCertAuthority``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetCertAuthority`: CertAuthorityResponse
+    fmt.Fprintf(os.Stdout, "Response from `CertAuthorityApi.GetCertAuthority`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **certAuthorityName** | **string**| The name of the Certificate Authority. | 
- **optional** | ***CertAuthorityApiGetCertAuthorityOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**certAuthorityName** | **string** | The name of the Certificate Authority. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a CertAuthorityApiGetCertAuthorityOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetCertAuthorityRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -77,33 +147,70 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetCertAuthorityOcspTlsTrustedCommonName**
-> CertAuthorityOcspTlsTrustedCommonNameResponse GetCertAuthorityOcspTlsTrustedCommonName(ctx, certAuthorityName, ocspTlsTrustedCommonName, optional)
+
+## GetCertAuthorityOcspTlsTrustedCommonName
+
+> CertAuthorityOcspTlsTrustedCommonNameResponse GetCertAuthorityOcspTlsTrustedCommonName(ctx, certAuthorityName, ocspTlsTrustedCommonName).Select_(select_).Execute()
+
 Get an OCSP Responder Trusted Common Name object.
 
-Get an OCSP Responder Trusted Common Name object.  When an OCSP override URL is configured, the OCSP responder will be required to sign the OCSP responses with certificates issued to these Trusted Common Names. A maximum of 8 common names can be configured as valid response signers.   Attribute|Identifying|Deprecated :---|:---:|:---: certAuthorityName|x|x ocspTlsTrustedCommonName|x|x    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been deprecated since 2.19. Replaced by clientCertAuthorities.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    certAuthorityName := "certAuthorityName_example" // string | The name of the Certificate Authority.
+    ocspTlsTrustedCommonName := "ocspTlsTrustedCommonName_example" // string | The expected Trusted Common Name of the OCSP responder remote certificate.
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.CertAuthorityApi.GetCertAuthorityOcspTlsTrustedCommonName(context.Background(), certAuthorityName, ocspTlsTrustedCommonName).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `CertAuthorityApi.GetCertAuthorityOcspTlsTrustedCommonName``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetCertAuthorityOcspTlsTrustedCommonName`: CertAuthorityOcspTlsTrustedCommonNameResponse
+    fmt.Fprintf(os.Stdout, "Response from `CertAuthorityApi.GetCertAuthorityOcspTlsTrustedCommonName`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **certAuthorityName** | **string**| The name of the Certificate Authority. | 
-  **ocspTlsTrustedCommonName** | **string**| The expected Trusted Common Name of the OCSP responder remote certificate. | 
- **optional** | ***CertAuthorityApiGetCertAuthorityOcspTlsTrustedCommonNameOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**certAuthorityName** | **string** | The name of the Certificate Authority. | 
+**ocspTlsTrustedCommonName** | **string** | The expected Trusted Common Name of the OCSP responder remote certificate. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a CertAuthorityApiGetCertAuthorityOcspTlsTrustedCommonNameOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetCertAuthorityOcspTlsTrustedCommonNameRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -115,32 +222,69 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetCertAuthorityOcspTlsTrustedCommonNames**
-> CertAuthorityOcspTlsTrustedCommonNamesResponse GetCertAuthorityOcspTlsTrustedCommonNames(ctx, certAuthorityName, optional)
+
+## GetCertAuthorityOcspTlsTrustedCommonNames
+
+> CertAuthorityOcspTlsTrustedCommonNamesResponse GetCertAuthorityOcspTlsTrustedCommonNames(ctx, certAuthorityName).Where(where).Select_(select_).Execute()
+
 Get a list of OCSP Responder Trusted Common Name objects.
 
-Get a list of OCSP Responder Trusted Common Name objects.  When an OCSP override URL is configured, the OCSP responder will be required to sign the OCSP responses with certificates issued to these Trusted Common Names. A maximum of 8 common names can be configured as valid response signers.   Attribute|Identifying|Deprecated :---|:---:|:---: certAuthorityName|x|x ocspTlsTrustedCommonName|x|x    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been deprecated since 2.19. Replaced by clientCertAuthorities.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    certAuthorityName := "certAuthorityName_example" // string | The name of the Certificate Authority.
+    where := []string{"Inner_example"} // []string | Include in the response only objects where certain conditions are true. See the the documentation for the `where` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.CertAuthorityApi.GetCertAuthorityOcspTlsTrustedCommonNames(context.Background(), certAuthorityName).Where(where).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `CertAuthorityApi.GetCertAuthorityOcspTlsTrustedCommonNames``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetCertAuthorityOcspTlsTrustedCommonNames`: CertAuthorityOcspTlsTrustedCommonNamesResponse
+    fmt.Fprintf(os.Stdout, "Response from `CertAuthorityApi.GetCertAuthorityOcspTlsTrustedCommonNames`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **certAuthorityName** | **string**| The name of the Certificate Authority. | 
- **optional** | ***CertAuthorityApiGetCertAuthorityOcspTlsTrustedCommonNamesOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**certAuthorityName** | **string** | The name of the Certificate Authority. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a CertAuthorityApiGetCertAuthorityOcspTlsTrustedCommonNamesOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetCertAuthorityOcspTlsTrustedCommonNamesRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
- **where** | [**optional.Interface of []string**](string.md)| Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **where** | **[]string** | Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -152,8 +296,10 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 

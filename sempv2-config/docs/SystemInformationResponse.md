@@ -1,11 +1,103 @@
 # SystemInformationResponse
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Data** | [***SystemInformation**](SystemInformation.md) |  | [optional] [default to null]
-**Links** | [***SystemInformationLinks**](SystemInformationLinks.md) |  | [optional] [default to null]
-**Meta** | [***SempMeta**](SempMeta.md) |  | [default to null]
+**Data** | Pointer to [**SystemInformation**](SystemInformation.md) |  | [optional] 
+**Links** | Pointer to [**SystemInformationLinks**](SystemInformationLinks.md) |  | [optional] 
+**Meta** | [**SempMeta**](SempMeta.md) |  | 
+
+## Methods
+
+### NewSystemInformationResponse
+
+`func NewSystemInformationResponse(meta SempMeta, ) *SystemInformationResponse`
+
+NewSystemInformationResponse instantiates a new SystemInformationResponse object
+This constructor will assign default values to properties that have it defined,
+and makes sure properties required by API are set, but the set of arguments
+will change when the set of required properties is changed
+
+### NewSystemInformationResponseWithDefaults
+
+`func NewSystemInformationResponseWithDefaults() *SystemInformationResponse`
+
+NewSystemInformationResponseWithDefaults instantiates a new SystemInformationResponse object
+This constructor will only assign default values to properties that have it defined,
+but it doesn't guarantee that properties required by API are set
+
+### GetData
+
+`func (o *SystemInformationResponse) GetData() SystemInformation`
+
+GetData returns the Data field if non-nil, zero value otherwise.
+
+### GetDataOk
+
+`func (o *SystemInformationResponse) GetDataOk() (*SystemInformation, bool)`
+
+GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetData
+
+`func (o *SystemInformationResponse) SetData(v SystemInformation)`
+
+SetData sets Data field to given value.
+
+### HasData
+
+`func (o *SystemInformationResponse) HasData() bool`
+
+HasData returns a boolean if a field has been set.
+
+### GetLinks
+
+`func (o *SystemInformationResponse) GetLinks() SystemInformationLinks`
+
+GetLinks returns the Links field if non-nil, zero value otherwise.
+
+### GetLinksOk
+
+`func (o *SystemInformationResponse) GetLinksOk() (*SystemInformationLinks, bool)`
+
+GetLinksOk returns a tuple with the Links field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetLinks
+
+`func (o *SystemInformationResponse) SetLinks(v SystemInformationLinks)`
+
+SetLinks sets Links field to given value.
+
+### HasLinks
+
+`func (o *SystemInformationResponse) HasLinks() bool`
+
+HasLinks returns a boolean if a field has been set.
+
+### GetMeta
+
+`func (o *SystemInformationResponse) GetMeta() SempMeta`
+
+GetMeta returns the Meta field if non-nil, zero value otherwise.
+
+### GetMetaOk
+
+`func (o *SystemInformationResponse) GetMetaOk() (*SempMeta, bool)`
+
+GetMetaOk returns a tuple with the Meta field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetMeta
+
+`func (o *SystemInformationResponse) SetMeta(v SempMeta)`
+
+SetMeta sets Meta field to given value.
+
+
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
 

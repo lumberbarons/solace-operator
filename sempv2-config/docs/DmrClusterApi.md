@@ -1,4 +1,4 @@
-# {{classname}}
+# \DmrClusterApi
 
 All URIs are relative to *http://www.solace.com/SEMP/v2/config*
 
@@ -25,27 +25,59 @@ Method | HTTP request | Description
 [**UpdateDmrCluster**](DmrClusterApi.md#UpdateDmrCluster) | **Patch** /dmrClusters/{dmrClusterName} | Update a Cluster object.
 [**UpdateDmrClusterLink**](DmrClusterApi.md#UpdateDmrClusterLink) | **Patch** /dmrClusters/{dmrClusterName}/links/{remoteNodeName} | Update a Link object.
 
-# **CreateDmrCluster**
-> DmrClusterResponse CreateDmrCluster(ctx, body, optional)
+
+
+## CreateDmrCluster
+
+> DmrClusterResponse CreateDmrCluster(ctx).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Create a Cluster object.
 
-Create a Cluster object. Any attribute missing from the request will be set to its default value.  A Cluster is a provisioned object on a message broker that contains global DMR configuration parameters.   Attribute|Identifying|Required|Read-Only|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---:|:---:|:---: authenticationBasicPassword||||x||x authenticationClientCertContent||||x||x authenticationClientCertPassword||||x|| dmrClusterName|x|x|||| nodeName|||x||| tlsServerCertEnforceTrustedCommonNameEnabled|||||x|    The following attributes in the request may only be provided in certain combinations with other attributes:   Class|Attribute|Requires|Conflicts :---|:---|:---|:--- DmrCluster|authenticationClientCertPassword|authenticationClientCertContent|    A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    body := *openapiclient.NewDmrCluster() // DmrCluster | The Cluster object's attributes.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.CreateDmrCluster(context.Background()).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.CreateDmrCluster``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `CreateDmrCluster`: DmrClusterResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.CreateDmrCluster`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiCreateDmrClusterRequest struct via the builder pattern
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**DmrCluster**](DmrCluster.md)| The Cluster object&#x27;s attributes. | 
- **optional** | ***DmrClusterApiCreateDmrClusterOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiCreateDmrClusterOpts struct
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
-
- **opaquePassword** | **optional.**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **body** | [**DmrCluster**](DmrCluster.md) | The Cluster object&#39;s attributes. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -57,34 +89,71 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+- **Content-Type**: application/json
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **CreateDmrClusterLink**
-> DmrClusterLinkResponse CreateDmrClusterLink(ctx, body, dmrClusterName, optional)
+
+## CreateDmrClusterLink
+
+> DmrClusterLinkResponse CreateDmrClusterLink(ctx, dmrClusterName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Create a Link object.
 
-Create a Link object. Any attribute missing from the request will be set to its default value.  A Link connects nodes (either within a Cluster or between two different Clusters) and allows them to exchange topology information, subscriptions and data.   Attribute|Identifying|Required|Read-Only|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---:|:---:|:---: authenticationBasicPassword||||x||x dmrClusterName|x||x||| remoteNodeName|x|x||||    The following attributes in the request may only be provided in certain combinations with other attributes:   Class|Attribute|Requires|Conflicts :---|:---|:---|:--- EventThreshold|clearPercent|setPercent|clearValue, setValue EventThreshold|clearValue|setValue|clearPercent, setPercent EventThreshold|setPercent|clearPercent|clearValue, setValue EventThreshold|setValue|clearValue|clearPercent, setPercent    A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    body := *openapiclient.NewDmrClusterLink() // DmrClusterLink | The Link object's attributes.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.CreateDmrClusterLink(context.Background(), dmrClusterName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.CreateDmrClusterLink``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `CreateDmrClusterLink`: DmrClusterLinkResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.CreateDmrClusterLink`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**DmrClusterLink**](DmrClusterLink.md)| The Link object&#x27;s attributes. | 
-  **dmrClusterName** | **string**| The name of the Cluster. | 
- **optional** | ***DmrClusterApiCreateDmrClusterLinkOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiCreateDmrClusterLinkOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiCreateDmrClusterLinkRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
-
- **opaquePassword** | **optional.**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **body** | [**DmrClusterLink**](DmrClusterLink.md) | The Link object&#39;s attributes. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -96,36 +165,74 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+- **Content-Type**: application/json
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **CreateDmrClusterLinkRemoteAddress**
-> DmrClusterLinkRemoteAddressResponse CreateDmrClusterLinkRemoteAddress(ctx, body, dmrClusterName, remoteNodeName, optional)
+
+## CreateDmrClusterLinkRemoteAddress
+
+> DmrClusterLinkRemoteAddressResponse CreateDmrClusterLinkRemoteAddress(ctx, dmrClusterName, remoteNodeName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Create a Remote Address object.
 
-Create a Remote Address object. Any attribute missing from the request will be set to its default value.  Each Remote Address, consisting of a FQDN or IP address and optional port, is used to connect to the remote node for this Link. Up to 4 addresses may be provided for each Link, and will be tried on a round-robin basis.   Attribute|Identifying|Required|Read-Only|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---:|:---:|:---: dmrClusterName|x||x||| remoteAddress|x|x|||| remoteNodeName|x||x|||    A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+    body := *openapiclient.NewDmrClusterLinkRemoteAddress() // DmrClusterLinkRemoteAddress | The Remote Address object's attributes.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.CreateDmrClusterLinkRemoteAddress(context.Background(), dmrClusterName, remoteNodeName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.CreateDmrClusterLinkRemoteAddress``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `CreateDmrClusterLinkRemoteAddress`: DmrClusterLinkRemoteAddressResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.CreateDmrClusterLinkRemoteAddress`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**DmrClusterLinkRemoteAddress**](DmrClusterLinkRemoteAddress.md)| The Remote Address object&#x27;s attributes. | 
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
- **optional** | ***DmrClusterApiCreateDmrClusterLinkRemoteAddressOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiCreateDmrClusterLinkRemoteAddressOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiCreateDmrClusterLinkRemoteAddressRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
-
- **opaquePassword** | **optional.**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **body** | [**DmrClusterLinkRemoteAddress**](DmrClusterLinkRemoteAddress.md) | The Remote Address object&#39;s attributes. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -137,36 +244,74 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+- **Content-Type**: application/json
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **CreateDmrClusterLinkTlsTrustedCommonName**
-> DmrClusterLinkTlsTrustedCommonNameResponse CreateDmrClusterLinkTlsTrustedCommonName(ctx, body, dmrClusterName, remoteNodeName, optional)
+
+## CreateDmrClusterLinkTlsTrustedCommonName
+
+> DmrClusterLinkTlsTrustedCommonNameResponse CreateDmrClusterLinkTlsTrustedCommonName(ctx, dmrClusterName, remoteNodeName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Create a Trusted Common Name object.
 
-Create a Trusted Common Name object. Any attribute missing from the request will be set to its default value.  The Trusted Common Names for the Link are used by encrypted transports to verify the name in the certificate presented by the remote node. They must include the common name of the remote node's server certificate or client certificate, depending upon the initiator of the connection.   Attribute|Identifying|Required|Read-Only|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---:|:---:|:---: dmrClusterName|x||x||x| remoteNodeName|x||x||x| tlsTrustedCommonName|x|x|||x|    A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been deprecated since 2.18. Common Name validation has been replaced by Server Certificate Name validation.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+    body := *openapiclient.NewDmrClusterLinkTlsTrustedCommonName() // DmrClusterLinkTlsTrustedCommonName | The Trusted Common Name object's attributes.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.CreateDmrClusterLinkTlsTrustedCommonName(context.Background(), dmrClusterName, remoteNodeName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.CreateDmrClusterLinkTlsTrustedCommonName``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `CreateDmrClusterLinkTlsTrustedCommonName`: DmrClusterLinkTlsTrustedCommonNameResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.CreateDmrClusterLinkTlsTrustedCommonName`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**DmrClusterLinkTlsTrustedCommonName**](DmrClusterLinkTlsTrustedCommonName.md)| The Trusted Common Name object&#x27;s attributes. | 
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
- **optional** | ***DmrClusterApiCreateDmrClusterLinkTlsTrustedCommonNameOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiCreateDmrClusterLinkTlsTrustedCommonNameOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiCreateDmrClusterLinkTlsTrustedCommonNameRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
-
- **opaquePassword** | **optional.**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **body** | [**DmrClusterLinkTlsTrustedCommonName**](DmrClusterLinkTlsTrustedCommonName.md) | The Trusted Common Name object&#39;s attributes. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -178,23 +323,65 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+- **Content-Type**: application/json
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **DeleteDmrCluster**
-> SempMetaOnlyResponse DeleteDmrCluster(ctx, dmrClusterName)
+
+## DeleteDmrCluster
+
+> SempMetaOnlyResponse DeleteDmrCluster(ctx, dmrClusterName).Execute()
+
 Delete a Cluster object.
 
-Delete a Cluster object.  A Cluster is a provisioned object on a message broker that contains global DMR configuration parameters.  A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.DeleteDmrCluster(context.Background(), dmrClusterName).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.DeleteDmrCluster``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `DeleteDmrCluster`: SempMetaOnlyResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.DeleteDmrCluster`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **dmrClusterName** | **string**| The name of the Cluster. | 
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiDeleteDmrClusterRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
 
 ### Return type
 
@@ -206,24 +393,68 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **DeleteDmrClusterLink**
-> SempMetaOnlyResponse DeleteDmrClusterLink(ctx, dmrClusterName, remoteNodeName)
+
+## DeleteDmrClusterLink
+
+> SempMetaOnlyResponse DeleteDmrClusterLink(ctx, dmrClusterName, remoteNodeName).Execute()
+
 Delete a Link object.
 
-Delete a Link object.  A Link connects nodes (either within a Cluster or between two different Clusters) and allows them to exchange topology information, subscriptions and data.  A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.DeleteDmrClusterLink(context.Background(), dmrClusterName, remoteNodeName).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.DeleteDmrClusterLink``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `DeleteDmrClusterLink`: SempMetaOnlyResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.DeleteDmrClusterLink`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiDeleteDmrClusterLinkRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
 
 ### Return type
 
@@ -235,25 +466,71 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **DeleteDmrClusterLinkRemoteAddress**
-> SempMetaOnlyResponse DeleteDmrClusterLinkRemoteAddress(ctx, dmrClusterName, remoteNodeName, remoteAddress)
+
+## DeleteDmrClusterLinkRemoteAddress
+
+> SempMetaOnlyResponse DeleteDmrClusterLinkRemoteAddress(ctx, dmrClusterName, remoteNodeName, remoteAddress).Execute()
+
 Delete a Remote Address object.
 
-Delete a Remote Address object.  Each Remote Address, consisting of a FQDN or IP address and optional port, is used to connect to the remote node for this Link. Up to 4 addresses may be provided for each Link, and will be tried on a round-robin basis.  A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+    remoteAddress := "remoteAddress_example" // string | The FQDN or IP address (and optional port) of the remote node. If a port is not provided, it will vary based on the transport encoding: 55555 (plain-text), 55443 (encrypted), or 55003 (compressed).
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.DeleteDmrClusterLinkRemoteAddress(context.Background(), dmrClusterName, remoteNodeName, remoteAddress).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.DeleteDmrClusterLinkRemoteAddress``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `DeleteDmrClusterLinkRemoteAddress`: SempMetaOnlyResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.DeleteDmrClusterLinkRemoteAddress`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
-  **remoteAddress** | **string**| The FQDN or IP address (and optional port) of the remote node. If a port is not provided, it will vary based on the transport encoding: 55555 (plain-text), 55443 (encrypted), or 55003 (compressed). | 
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
+**remoteAddress** | **string** | The FQDN or IP address (and optional port) of the remote node. If a port is not provided, it will vary based on the transport encoding: 55555 (plain-text), 55443 (encrypted), or 55003 (compressed). | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiDeleteDmrClusterLinkRemoteAddressRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+
 
 ### Return type
 
@@ -265,25 +542,71 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **DeleteDmrClusterLinkTlsTrustedCommonName**
-> SempMetaOnlyResponse DeleteDmrClusterLinkTlsTrustedCommonName(ctx, dmrClusterName, remoteNodeName, tlsTrustedCommonName)
+
+## DeleteDmrClusterLinkTlsTrustedCommonName
+
+> SempMetaOnlyResponse DeleteDmrClusterLinkTlsTrustedCommonName(ctx, dmrClusterName, remoteNodeName, tlsTrustedCommonName).Execute()
+
 Delete a Trusted Common Name object.
 
-Delete a Trusted Common Name object.  The Trusted Common Names for the Link are used by encrypted transports to verify the name in the certificate presented by the remote node. They must include the common name of the remote node's server certificate or client certificate, depending upon the initiator of the connection.  A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been deprecated since 2.18. Common Name validation has been replaced by Server Certificate Name validation.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+    tlsTrustedCommonName := "tlsTrustedCommonName_example" // string | The expected trusted common name of the remote certificate.
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.DeleteDmrClusterLinkTlsTrustedCommonName(context.Background(), dmrClusterName, remoteNodeName, tlsTrustedCommonName).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.DeleteDmrClusterLinkTlsTrustedCommonName``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `DeleteDmrClusterLinkTlsTrustedCommonName`: SempMetaOnlyResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.DeleteDmrClusterLinkTlsTrustedCommonName`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
-  **tlsTrustedCommonName** | **string**| The expected trusted common name of the remote certificate. | 
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
+**tlsTrustedCommonName** | **string** | The expected trusted common name of the remote certificate. | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiDeleteDmrClusterLinkTlsTrustedCommonNameRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+
 
 ### Return type
 
@@ -295,32 +618,69 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetDmrCluster**
-> DmrClusterResponse GetDmrCluster(ctx, dmrClusterName, optional)
+
+## GetDmrCluster
+
+> DmrClusterResponse GetDmrCluster(ctx, dmrClusterName).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Get a Cluster object.
 
-Get a Cluster object.  A Cluster is a provisioned object on a message broker that contains global DMR configuration parameters.   Attribute|Identifying|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---: authenticationBasicPassword||x||x authenticationClientCertContent||x||x authenticationClientCertPassword||x|| dmrClusterName|x||| tlsServerCertEnforceTrustedCommonNameEnabled|||x|    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.GetDmrCluster(context.Background(), dmrClusterName).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.GetDmrCluster``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetDmrCluster`: DmrClusterResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.GetDmrCluster`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **dmrClusterName** | **string**| The name of the Cluster. | 
- **optional** | ***DmrClusterApiGetDmrClusterOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiGetDmrClusterOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetDmrClusterRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
- **opaquePassword** | **optional.String**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -332,34 +692,72 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetDmrClusterLink**
-> DmrClusterLinkResponse GetDmrClusterLink(ctx, dmrClusterName, remoteNodeName, optional)
+
+## GetDmrClusterLink
+
+> DmrClusterLinkResponse GetDmrClusterLink(ctx, dmrClusterName, remoteNodeName).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Get a Link object.
 
-Get a Link object.  A Link connects nodes (either within a Cluster or between two different Clusters) and allows them to exchange topology information, subscriptions and data.   Attribute|Identifying|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---: authenticationBasicPassword||x||x dmrClusterName|x||| remoteNodeName|x|||    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.GetDmrClusterLink(context.Background(), dmrClusterName, remoteNodeName).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.GetDmrClusterLink``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetDmrClusterLink`: DmrClusterLinkResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.GetDmrClusterLink`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
- **optional** | ***DmrClusterApiGetDmrClusterLinkOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiGetDmrClusterLinkOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetDmrClusterLinkRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
- **opaquePassword** | **optional.String**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -371,36 +769,75 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetDmrClusterLinkRemoteAddress**
-> DmrClusterLinkRemoteAddressResponse GetDmrClusterLinkRemoteAddress(ctx, dmrClusterName, remoteNodeName, remoteAddress, optional)
+
+## GetDmrClusterLinkRemoteAddress
+
+> DmrClusterLinkRemoteAddressResponse GetDmrClusterLinkRemoteAddress(ctx, dmrClusterName, remoteNodeName, remoteAddress).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Get a Remote Address object.
 
-Get a Remote Address object.  Each Remote Address, consisting of a FQDN or IP address and optional port, is used to connect to the remote node for this Link. Up to 4 addresses may be provided for each Link, and will be tried on a round-robin basis.   Attribute|Identifying|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---: dmrClusterName|x||| remoteAddress|x||| remoteNodeName|x|||    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+    remoteAddress := "remoteAddress_example" // string | The FQDN or IP address (and optional port) of the remote node. If a port is not provided, it will vary based on the transport encoding: 55555 (plain-text), 55443 (encrypted), or 55003 (compressed).
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.GetDmrClusterLinkRemoteAddress(context.Background(), dmrClusterName, remoteNodeName, remoteAddress).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.GetDmrClusterLinkRemoteAddress``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetDmrClusterLinkRemoteAddress`: DmrClusterLinkRemoteAddressResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.GetDmrClusterLinkRemoteAddress`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
-  **remoteAddress** | **string**| The FQDN or IP address (and optional port) of the remote node. If a port is not provided, it will vary based on the transport encoding: 55555 (plain-text), 55443 (encrypted), or 55003 (compressed). | 
- **optional** | ***DmrClusterApiGetDmrClusterLinkRemoteAddressOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
+**remoteAddress** | **string** | The FQDN or IP address (and optional port) of the remote node. If a port is not provided, it will vary based on the transport encoding: 55555 (plain-text), 55443 (encrypted), or 55003 (compressed). | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiGetDmrClusterLinkRemoteAddressOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetDmrClusterLinkRemoteAddressRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
 
- **opaquePassword** | **optional.String**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -412,35 +849,74 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetDmrClusterLinkRemoteAddresses**
-> DmrClusterLinkRemoteAddressesResponse GetDmrClusterLinkRemoteAddresses(ctx, dmrClusterName, remoteNodeName, optional)
+
+## GetDmrClusterLinkRemoteAddresses
+
+> DmrClusterLinkRemoteAddressesResponse GetDmrClusterLinkRemoteAddresses(ctx, dmrClusterName, remoteNodeName).OpaquePassword(opaquePassword).Where(where).Select_(select_).Execute()
+
 Get a list of Remote Address objects.
 
-Get a list of Remote Address objects.  Each Remote Address, consisting of a FQDN or IP address and optional port, is used to connect to the remote node for this Link. Up to 4 addresses may be provided for each Link, and will be tried on a round-robin basis.   Attribute|Identifying|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---: dmrClusterName|x||| remoteAddress|x||| remoteNodeName|x|||    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    where := []string{"Inner_example"} // []string | Include in the response only objects where certain conditions are true. See the the documentation for the `where` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.GetDmrClusterLinkRemoteAddresses(context.Background(), dmrClusterName, remoteNodeName).OpaquePassword(opaquePassword).Where(where).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.GetDmrClusterLinkRemoteAddresses``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetDmrClusterLinkRemoteAddresses`: DmrClusterLinkRemoteAddressesResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.GetDmrClusterLinkRemoteAddresses`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
- **optional** | ***DmrClusterApiGetDmrClusterLinkRemoteAddressesOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiGetDmrClusterLinkRemoteAddressesOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetDmrClusterLinkRemoteAddressesRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
- **opaquePassword** | **optional.String**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **where** | [**optional.Interface of []string**](string.md)| Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **where** | **[]string** | Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -452,36 +928,75 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetDmrClusterLinkTlsTrustedCommonName**
-> DmrClusterLinkTlsTrustedCommonNameResponse GetDmrClusterLinkTlsTrustedCommonName(ctx, dmrClusterName, remoteNodeName, tlsTrustedCommonName, optional)
+
+## GetDmrClusterLinkTlsTrustedCommonName
+
+> DmrClusterLinkTlsTrustedCommonNameResponse GetDmrClusterLinkTlsTrustedCommonName(ctx, dmrClusterName, remoteNodeName, tlsTrustedCommonName).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Get a Trusted Common Name object.
 
-Get a Trusted Common Name object.  The Trusted Common Names for the Link are used by encrypted transports to verify the name in the certificate presented by the remote node. They must include the common name of the remote node's server certificate or client certificate, depending upon the initiator of the connection.   Attribute|Identifying|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---: dmrClusterName|x||x| remoteNodeName|x||x| tlsTrustedCommonName|x||x|    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been deprecated since 2.18. Common Name validation has been replaced by Server Certificate Name validation.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+    tlsTrustedCommonName := "tlsTrustedCommonName_example" // string | The expected trusted common name of the remote certificate.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.GetDmrClusterLinkTlsTrustedCommonName(context.Background(), dmrClusterName, remoteNodeName, tlsTrustedCommonName).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.GetDmrClusterLinkTlsTrustedCommonName``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetDmrClusterLinkTlsTrustedCommonName`: DmrClusterLinkTlsTrustedCommonNameResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.GetDmrClusterLinkTlsTrustedCommonName`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
-  **tlsTrustedCommonName** | **string**| The expected trusted common name of the remote certificate. | 
- **optional** | ***DmrClusterApiGetDmrClusterLinkTlsTrustedCommonNameOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
+**tlsTrustedCommonName** | **string** | The expected trusted common name of the remote certificate. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiGetDmrClusterLinkTlsTrustedCommonNameOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetDmrClusterLinkTlsTrustedCommonNameRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
 
- **opaquePassword** | **optional.String**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -493,35 +1008,74 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetDmrClusterLinkTlsTrustedCommonNames**
-> DmrClusterLinkTlsTrustedCommonNamesResponse GetDmrClusterLinkTlsTrustedCommonNames(ctx, dmrClusterName, remoteNodeName, optional)
+
+## GetDmrClusterLinkTlsTrustedCommonNames
+
+> DmrClusterLinkTlsTrustedCommonNamesResponse GetDmrClusterLinkTlsTrustedCommonNames(ctx, dmrClusterName, remoteNodeName).OpaquePassword(opaquePassword).Where(where).Select_(select_).Execute()
+
 Get a list of Trusted Common Name objects.
 
-Get a list of Trusted Common Name objects.  The Trusted Common Names for the Link are used by encrypted transports to verify the name in the certificate presented by the remote node. They must include the common name of the remote node's server certificate or client certificate, depending upon the initiator of the connection.   Attribute|Identifying|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---: dmrClusterName|x||x| remoteNodeName|x||x| tlsTrustedCommonName|x||x|    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been deprecated since 2.18. Common Name validation has been replaced by Server Certificate Name validation.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    where := []string{"Inner_example"} // []string | Include in the response only objects where certain conditions are true. See the the documentation for the `where` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.GetDmrClusterLinkTlsTrustedCommonNames(context.Background(), dmrClusterName, remoteNodeName).OpaquePassword(opaquePassword).Where(where).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.GetDmrClusterLinkTlsTrustedCommonNames``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetDmrClusterLinkTlsTrustedCommonNames`: DmrClusterLinkTlsTrustedCommonNamesResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.GetDmrClusterLinkTlsTrustedCommonNames`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
- **optional** | ***DmrClusterApiGetDmrClusterLinkTlsTrustedCommonNamesOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiGetDmrClusterLinkTlsTrustedCommonNamesOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetDmrClusterLinkTlsTrustedCommonNamesRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
- **opaquePassword** | **optional.String**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **where** | [**optional.Interface of []string**](string.md)| Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **where** | **[]string** | Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -533,35 +1087,75 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetDmrClusterLinks**
-> DmrClusterLinksResponse GetDmrClusterLinks(ctx, dmrClusterName, optional)
+
+## GetDmrClusterLinks
+
+> DmrClusterLinksResponse GetDmrClusterLinks(ctx, dmrClusterName).Count(count).Cursor(cursor).OpaquePassword(opaquePassword).Where(where).Select_(select_).Execute()
+
 Get a list of Link objects.
 
-Get a list of Link objects.  A Link connects nodes (either within a Cluster or between two different Clusters) and allows them to exchange topology information, subscriptions and data.   Attribute|Identifying|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---: authenticationBasicPassword||x||x dmrClusterName|x||| remoteNodeName|x|||    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    count := int32(56) // int32 | Limit the count of objects in the response. See the documentation for the `count` parameter. (optional) (default to 10)
+    cursor := "cursor_example" // string | The cursor, or position, for the next page of objects. See the documentation for the `cursor` parameter. (optional)
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    where := []string{"Inner_example"} // []string | Include in the response only objects where certain conditions are true. See the the documentation for the `where` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.GetDmrClusterLinks(context.Background(), dmrClusterName).Count(count).Cursor(cursor).OpaquePassword(opaquePassword).Where(where).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.GetDmrClusterLinks``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetDmrClusterLinks`: DmrClusterLinksResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.GetDmrClusterLinks`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **dmrClusterName** | **string**| The name of the Cluster. | 
- **optional** | ***DmrClusterApiGetDmrClusterLinksOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiGetDmrClusterLinksOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetDmrClusterLinksRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
- **count** | **optional.Int32**| Limit the count of objects in the response. See the documentation for the &#x60;count&#x60; parameter. | [default to 10]
- **cursor** | **optional.String**| The cursor, or position, for the next page of objects. See the documentation for the &#x60;cursor&#x60; parameter. | 
- **opaquePassword** | **optional.String**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **where** | [**optional.Interface of []string**](string.md)| Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **count** | **int32** | Limit the count of objects in the response. See the documentation for the &#x60;count&#x60; parameter. | [default to 10]
+ **cursor** | **string** | The cursor, or position, for the next page of objects. See the documentation for the &#x60;cursor&#x60; parameter. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **where** | **[]string** | Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -573,33 +1167,69 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **GetDmrClusters**
-> DmrClustersResponse GetDmrClusters(ctx, optional)
+
+## GetDmrClusters
+
+> DmrClustersResponse GetDmrClusters(ctx).Count(count).Cursor(cursor).OpaquePassword(opaquePassword).Where(where).Select_(select_).Execute()
+
 Get a list of Cluster objects.
 
-Get a list of Cluster objects.  A Cluster is a provisioned object on a message broker that contains global DMR configuration parameters.   Attribute|Identifying|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---: authenticationBasicPassword||x||x authenticationClientCertContent||x||x authenticationClientCertPassword||x|| dmrClusterName|x||| tlsServerCertEnforceTrustedCommonNameEnabled|||x|    A SEMP client authorized with a minimum access scope/level of \"global/read-only\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    count := int32(56) // int32 | Limit the count of objects in the response. See the documentation for the `count` parameter. (optional) (default to 10)
+    cursor := "cursor_example" // string | The cursor, or position, for the next page of objects. See the documentation for the `cursor` parameter. (optional)
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    where := []string{"Inner_example"} // []string | Include in the response only objects where certain conditions are true. See the the documentation for the `where` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.GetDmrClusters(context.Background()).Count(count).Cursor(cursor).OpaquePassword(opaquePassword).Where(where).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.GetDmrClusters``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetDmrClusters`: DmrClustersResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.GetDmrClusters`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetDmrClustersRequest struct via the builder pattern
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***DmrClusterApiGetDmrClustersOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiGetDmrClustersOpts struct
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **count** | **optional.Int32**| Limit the count of objects in the response. See the documentation for the &#x60;count&#x60; parameter. | [default to 10]
- **cursor** | **optional.String**| The cursor, or position, for the next page of objects. See the documentation for the &#x60;cursor&#x60; parameter. | 
- **opaquePassword** | **optional.String**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **where** | [**optional.Interface of []string**](string.md)| Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **count** | **int32** | Limit the count of objects in the response. See the documentation for the &#x60;count&#x60; parameter. | [default to 10]
+ **cursor** | **string** | The cursor, or position, for the next page of objects. See the documentation for the &#x60;cursor&#x60; parameter. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **where** | **[]string** | Include in the response only objects where certain conditions are true. See the the documentation for the &#x60;where&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -611,34 +1241,71 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **ReplaceDmrCluster**
-> DmrClusterResponse ReplaceDmrCluster(ctx, body, dmrClusterName, optional)
+
+## ReplaceDmrCluster
+
+> DmrClusterResponse ReplaceDmrCluster(ctx, dmrClusterName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Replace a Cluster object.
 
-Replace a Cluster object. Any attribute missing from the request will be set to its default value, subject to the exceptions in note 4.  A Cluster is a provisioned object on a message broker that contains global DMR configuration parameters.   Attribute|Identifying|Read-Only|Write-Only|Requires-Disable|Deprecated|Opaque :---|:---:|:---:|:---:|:---:|:---:|:---: authenticationBasicPassword|||x|x||x authenticationClientCertContent|||x|x||x authenticationClientCertPassword|||x|x|| directOnlyEnabled||x|||| dmrClusterName|x|x|||| nodeName||x|||| tlsServerCertEnforceTrustedCommonNameEnabled|||||x|    The following attributes in the request may only be provided in certain combinations with other attributes:   Class|Attribute|Requires|Conflicts :---|:---|:---|:--- DmrCluster|authenticationClientCertPassword|authenticationClientCertContent|    A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    body := *openapiclient.NewDmrCluster() // DmrCluster | The Cluster object's attributes.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.ReplaceDmrCluster(context.Background(), dmrClusterName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.ReplaceDmrCluster``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `ReplaceDmrCluster`: DmrClusterResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.ReplaceDmrCluster`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**DmrCluster**](DmrCluster.md)| The Cluster object&#x27;s attributes. | 
-  **dmrClusterName** | **string**| The name of the Cluster. | 
- **optional** | ***DmrClusterApiReplaceDmrClusterOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiReplaceDmrClusterOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiReplaceDmrClusterRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
-
- **opaquePassword** | **optional.**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **body** | [**DmrCluster**](DmrCluster.md) | The Cluster object&#39;s attributes. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -650,36 +1317,74 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+- **Content-Type**: application/json
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **ReplaceDmrClusterLink**
-> DmrClusterLinkResponse ReplaceDmrClusterLink(ctx, body, dmrClusterName, remoteNodeName, optional)
+
+## ReplaceDmrClusterLink
+
+> DmrClusterLinkResponse ReplaceDmrClusterLink(ctx, dmrClusterName, remoteNodeName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Replace a Link object.
 
-Replace a Link object. Any attribute missing from the request will be set to its default value, subject to the exceptions in note 4.  A Link connects nodes (either within a Cluster or between two different Clusters) and allows them to exchange topology information, subscriptions and data.   Attribute|Identifying|Read-Only|Write-Only|Requires-Disable|Deprecated|Opaque :---|:---:|:---:|:---:|:---:|:---:|:---: authenticationBasicPassword|||x|x||x authenticationScheme||||x|| dmrClusterName|x|x|||| egressFlowWindowSize||||x|| initiator||||x|| remoteNodeName|x|x|||| span||||x|| transportCompressedEnabled||||x|| transportTlsEnabled||||x||    The following attributes in the request may only be provided in certain combinations with other attributes:   Class|Attribute|Requires|Conflicts :---|:---|:---|:--- EventThreshold|clearPercent|setPercent|clearValue, setValue EventThreshold|clearValue|setValue|clearPercent, setPercent EventThreshold|setPercent|clearPercent|clearValue, setValue EventThreshold|setValue|clearValue|clearPercent, setPercent    A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+    body := *openapiclient.NewDmrClusterLink() // DmrClusterLink | The Link object's attributes.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.ReplaceDmrClusterLink(context.Background(), dmrClusterName, remoteNodeName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.ReplaceDmrClusterLink``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `ReplaceDmrClusterLink`: DmrClusterLinkResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.ReplaceDmrClusterLink`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**DmrClusterLink**](DmrClusterLink.md)| The Link object&#x27;s attributes. | 
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
- **optional** | ***DmrClusterApiReplaceDmrClusterLinkOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiReplaceDmrClusterLinkOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiReplaceDmrClusterLinkRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
-
- **opaquePassword** | **optional.**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **body** | [**DmrClusterLink**](DmrClusterLink.md) | The Link object&#39;s attributes. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -691,34 +1396,71 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+- **Content-Type**: application/json
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **UpdateDmrCluster**
-> DmrClusterResponse UpdateDmrCluster(ctx, body, dmrClusterName, optional)
+
+## UpdateDmrCluster
+
+> DmrClusterResponse UpdateDmrCluster(ctx, dmrClusterName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Update a Cluster object.
 
-Update a Cluster object. Any attribute missing from the request will be left unchanged.  A Cluster is a provisioned object on a message broker that contains global DMR configuration parameters.   Attribute|Identifying|Read-Only|Write-Only|Requires-Disable|Deprecated|Opaque :---|:---:|:---:|:---:|:---:|:---:|:---: authenticationBasicPassword|||x|x||x authenticationClientCertContent|||x|x||x authenticationClientCertPassword|||x|x|| directOnlyEnabled||x|||| dmrClusterName|x|x|||| nodeName||x|||| tlsServerCertEnforceTrustedCommonNameEnabled|||||x|    The following attributes in the request may only be provided in certain combinations with other attributes:   Class|Attribute|Requires|Conflicts :---|:---|:---|:--- DmrCluster|authenticationClientCertPassword|authenticationClientCertContent|    A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    body := *openapiclient.NewDmrCluster() // DmrCluster | The Cluster object's attributes.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.UpdateDmrCluster(context.Background(), dmrClusterName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.UpdateDmrCluster``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `UpdateDmrCluster`: DmrClusterResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.UpdateDmrCluster`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**DmrCluster**](DmrCluster.md)| The Cluster object&#x27;s attributes. | 
-  **dmrClusterName** | **string**| The name of the Cluster. | 
- **optional** | ***DmrClusterApiUpdateDmrClusterOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiUpdateDmrClusterOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiUpdateDmrClusterRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
-
- **opaquePassword** | **optional.**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **body** | [**DmrCluster**](DmrCluster.md) | The Cluster object&#39;s attributes. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -730,36 +1472,74 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+- **Content-Type**: application/json
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
-# **UpdateDmrClusterLink**
-> DmrClusterLinkResponse UpdateDmrClusterLink(ctx, body, dmrClusterName, remoteNodeName, optional)
+
+## UpdateDmrClusterLink
+
+> DmrClusterLinkResponse UpdateDmrClusterLink(ctx, dmrClusterName, remoteNodeName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Update a Link object.
 
-Update a Link object. Any attribute missing from the request will be left unchanged.  A Link connects nodes (either within a Cluster or between two different Clusters) and allows them to exchange topology information, subscriptions and data.   Attribute|Identifying|Read-Only|Write-Only|Requires-Disable|Deprecated|Opaque :---|:---:|:---:|:---:|:---:|:---:|:---: authenticationBasicPassword|||x|x||x authenticationScheme||||x|| dmrClusterName|x|x|||| egressFlowWindowSize||||x|| initiator||||x|| remoteNodeName|x|x|||| span||||x|| transportCompressedEnabled||||x|| transportTlsEnabled||||x||    The following attributes in the request may only be provided in certain combinations with other attributes:   Class|Attribute|Requires|Conflicts :---|:---|:---|:--- EventThreshold|clearPercent|setPercent|clearValue, setValue EventThreshold|clearValue|setValue|clearPercent, setPercent EventThreshold|setPercent|clearPercent|clearValue, setValue EventThreshold|setValue|clearValue|clearPercent, setPercent    A SEMP client authorized with a minimum access scope/level of \"global/read-write\" is required to perform this operation.  This has been available since 2.11.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    dmrClusterName := "dmrClusterName_example" // string | The name of the Cluster.
+    remoteNodeName := "remoteNodeName_example" // string | The name of the node at the remote end of the Link.
+    body := *openapiclient.NewDmrClusterLink() // DmrClusterLink | The Link object's attributes.
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.DmrClusterApi.UpdateDmrClusterLink(context.Background(), dmrClusterName, remoteNodeName).Body(body).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DmrClusterApi.UpdateDmrClusterLink``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `UpdateDmrClusterLink`: DmrClusterLinkResponse
+    fmt.Fprintf(os.Stdout, "Response from `DmrClusterApi.UpdateDmrClusterLink`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**DmrClusterLink**](DmrClusterLink.md)| The Link object&#x27;s attributes. | 
-  **dmrClusterName** | **string**| The name of the Cluster. | 
-  **remoteNodeName** | **string**| The name of the node at the remote end of the Link. | 
- **optional** | ***DmrClusterApiUpdateDmrClusterLinkOpts** | optional parameters | nil if no parameters
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**dmrClusterName** | **string** | The name of the Cluster. | 
+**remoteNodeName** | **string** | The name of the node at the remote end of the Link. | 
 
-### Optional Parameters
-Optional parameters are passed through a pointer to a DmrClusterApiUpdateDmrClusterLinkOpts struct
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiUpdateDmrClusterLinkRequest struct via the builder pattern
+
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
-
- **opaquePassword** | **optional.**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **body** | [**DmrClusterLink**](DmrClusterLink.md) | The Link object&#39;s attributes. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -771,8 +1551,10 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+- **Content-Type**: application/json
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 

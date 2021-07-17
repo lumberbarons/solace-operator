@@ -1,12 +1,129 @@
 # MsgVpnClientUsernameResponse
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Collections** | [***MsgVpnClientUsernameCollections**](MsgVpnClientUsernameCollections.md) |  | [optional] [default to null]
-**Data** | [***MsgVpnClientUsername**](MsgVpnClientUsername.md) |  | [optional] [default to null]
-**Links** | [***MsgVpnClientUsernameLinks**](MsgVpnClientUsernameLinks.md) |  | [optional] [default to null]
-**Meta** | [***SempMeta**](SempMeta.md) |  | [default to null]
+**Collections** | Pointer to **map[string]interface{}** |  | [optional] 
+**Data** | Pointer to [**MsgVpnClientUsername**](MsgVpnClientUsername.md) |  | [optional] 
+**Links** | Pointer to [**MsgVpnClientUsernameLinks**](MsgVpnClientUsernameLinks.md) |  | [optional] 
+**Meta** | [**SempMeta**](SempMeta.md) |  | 
+
+## Methods
+
+### NewMsgVpnClientUsernameResponse
+
+`func NewMsgVpnClientUsernameResponse(meta SempMeta, ) *MsgVpnClientUsernameResponse`
+
+NewMsgVpnClientUsernameResponse instantiates a new MsgVpnClientUsernameResponse object
+This constructor will assign default values to properties that have it defined,
+and makes sure properties required by API are set, but the set of arguments
+will change when the set of required properties is changed
+
+### NewMsgVpnClientUsernameResponseWithDefaults
+
+`func NewMsgVpnClientUsernameResponseWithDefaults() *MsgVpnClientUsernameResponse`
+
+NewMsgVpnClientUsernameResponseWithDefaults instantiates a new MsgVpnClientUsernameResponse object
+This constructor will only assign default values to properties that have it defined,
+but it doesn't guarantee that properties required by API are set
+
+### GetCollections
+
+`func (o *MsgVpnClientUsernameResponse) GetCollections() map[string]interface{}`
+
+GetCollections returns the Collections field if non-nil, zero value otherwise.
+
+### GetCollectionsOk
+
+`func (o *MsgVpnClientUsernameResponse) GetCollectionsOk() (*map[string]interface{}, bool)`
+
+GetCollectionsOk returns a tuple with the Collections field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetCollections
+
+`func (o *MsgVpnClientUsernameResponse) SetCollections(v map[string]interface{})`
+
+SetCollections sets Collections field to given value.
+
+### HasCollections
+
+`func (o *MsgVpnClientUsernameResponse) HasCollections() bool`
+
+HasCollections returns a boolean if a field has been set.
+
+### GetData
+
+`func (o *MsgVpnClientUsernameResponse) GetData() MsgVpnClientUsername`
+
+GetData returns the Data field if non-nil, zero value otherwise.
+
+### GetDataOk
+
+`func (o *MsgVpnClientUsernameResponse) GetDataOk() (*MsgVpnClientUsername, bool)`
+
+GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetData
+
+`func (o *MsgVpnClientUsernameResponse) SetData(v MsgVpnClientUsername)`
+
+SetData sets Data field to given value.
+
+### HasData
+
+`func (o *MsgVpnClientUsernameResponse) HasData() bool`
+
+HasData returns a boolean if a field has been set.
+
+### GetLinks
+
+`func (o *MsgVpnClientUsernameResponse) GetLinks() MsgVpnClientUsernameLinks`
+
+GetLinks returns the Links field if non-nil, zero value otherwise.
+
+### GetLinksOk
+
+`func (o *MsgVpnClientUsernameResponse) GetLinksOk() (*MsgVpnClientUsernameLinks, bool)`
+
+GetLinksOk returns a tuple with the Links field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetLinks
+
+`func (o *MsgVpnClientUsernameResponse) SetLinks(v MsgVpnClientUsernameLinks)`
+
+SetLinks sets Links field to given value.
+
+### HasLinks
+
+`func (o *MsgVpnClientUsernameResponse) HasLinks() bool`
+
+HasLinks returns a boolean if a field has been set.
+
+### GetMeta
+
+`func (o *MsgVpnClientUsernameResponse) GetMeta() SempMeta`
+
+GetMeta returns the Meta field if non-nil, zero value otherwise.
+
+### GetMetaOk
+
+`func (o *MsgVpnClientUsernameResponse) GetMetaOk() (*SempMeta, bool)`
+
+GetMetaOk returns a tuple with the Meta field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetMeta
+
+`func (o *MsgVpnClientUsernameResponse) SetMeta(v SempMeta)`
+
+SetMeta sets Meta field to given value.
+
+
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
 

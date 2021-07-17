@@ -1,11 +1,103 @@
 # MsgVpnBridgeRemoteMsgVpnsResponse
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Data** | [**[]MsgVpnBridgeRemoteMsgVpn**](MsgVpnBridgeRemoteMsgVpn.md) |  | [optional] [default to null]
-**Links** | [**[]MsgVpnBridgeRemoteMsgVpnLinks**](MsgVpnBridgeRemoteMsgVpnLinks.md) |  | [optional] [default to null]
-**Meta** | [***SempMeta**](SempMeta.md) |  | [default to null]
+**Data** | Pointer to [**[]MsgVpnBridgeRemoteMsgVpn**](MsgVpnBridgeRemoteMsgVpn.md) |  | [optional] 
+**Links** | Pointer to [**[]MsgVpnBridgeRemoteMsgVpnLinks**](MsgVpnBridgeRemoteMsgVpnLinks.md) |  | [optional] 
+**Meta** | [**SempMeta**](SempMeta.md) |  | 
+
+## Methods
+
+### NewMsgVpnBridgeRemoteMsgVpnsResponse
+
+`func NewMsgVpnBridgeRemoteMsgVpnsResponse(meta SempMeta, ) *MsgVpnBridgeRemoteMsgVpnsResponse`
+
+NewMsgVpnBridgeRemoteMsgVpnsResponse instantiates a new MsgVpnBridgeRemoteMsgVpnsResponse object
+This constructor will assign default values to properties that have it defined,
+and makes sure properties required by API are set, but the set of arguments
+will change when the set of required properties is changed
+
+### NewMsgVpnBridgeRemoteMsgVpnsResponseWithDefaults
+
+`func NewMsgVpnBridgeRemoteMsgVpnsResponseWithDefaults() *MsgVpnBridgeRemoteMsgVpnsResponse`
+
+NewMsgVpnBridgeRemoteMsgVpnsResponseWithDefaults instantiates a new MsgVpnBridgeRemoteMsgVpnsResponse object
+This constructor will only assign default values to properties that have it defined,
+but it doesn't guarantee that properties required by API are set
+
+### GetData
+
+`func (o *MsgVpnBridgeRemoteMsgVpnsResponse) GetData() []MsgVpnBridgeRemoteMsgVpn`
+
+GetData returns the Data field if non-nil, zero value otherwise.
+
+### GetDataOk
+
+`func (o *MsgVpnBridgeRemoteMsgVpnsResponse) GetDataOk() (*[]MsgVpnBridgeRemoteMsgVpn, bool)`
+
+GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetData
+
+`func (o *MsgVpnBridgeRemoteMsgVpnsResponse) SetData(v []MsgVpnBridgeRemoteMsgVpn)`
+
+SetData sets Data field to given value.
+
+### HasData
+
+`func (o *MsgVpnBridgeRemoteMsgVpnsResponse) HasData() bool`
+
+HasData returns a boolean if a field has been set.
+
+### GetLinks
+
+`func (o *MsgVpnBridgeRemoteMsgVpnsResponse) GetLinks() []MsgVpnBridgeRemoteMsgVpnLinks`
+
+GetLinks returns the Links field if non-nil, zero value otherwise.
+
+### GetLinksOk
+
+`func (o *MsgVpnBridgeRemoteMsgVpnsResponse) GetLinksOk() (*[]MsgVpnBridgeRemoteMsgVpnLinks, bool)`
+
+GetLinksOk returns a tuple with the Links field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetLinks
+
+`func (o *MsgVpnBridgeRemoteMsgVpnsResponse) SetLinks(v []MsgVpnBridgeRemoteMsgVpnLinks)`
+
+SetLinks sets Links field to given value.
+
+### HasLinks
+
+`func (o *MsgVpnBridgeRemoteMsgVpnsResponse) HasLinks() bool`
+
+HasLinks returns a boolean if a field has been set.
+
+### GetMeta
+
+`func (o *MsgVpnBridgeRemoteMsgVpnsResponse) GetMeta() SempMeta`
+
+GetMeta returns the Meta field if non-nil, zero value otherwise.
+
+### GetMetaOk
+
+`func (o *MsgVpnBridgeRemoteMsgVpnsResponse) GetMetaOk() (*SempMeta, bool)`
+
+GetMetaOk returns a tuple with the Meta field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetMeta
+
+`func (o *MsgVpnBridgeRemoteMsgVpnsResponse) SetMeta(v SempMeta)`
+
+SetMeta sets Meta field to given value.
+
+
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
 

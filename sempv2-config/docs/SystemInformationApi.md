@@ -1,4 +1,4 @@
-# {{classname}}
+# \SystemInformationApi
 
 All URIs are relative to *http://www.solace.com/SEMP/v2/config*
 
@@ -6,25 +6,57 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**GetSystemInformation**](SystemInformationApi.md#GetSystemInformation) | **Get** /systemInformation | Get a System Information object.
 
-# **GetSystemInformation**
-> SystemInformationResponse GetSystemInformation(ctx, optional)
+
+
+## GetSystemInformation
+
+> SystemInformationResponse GetSystemInformation(ctx).OpaquePassword(opaquePassword).Select_(select_).Execute()
+
 Get a System Information object.
 
-Get a System Information object.  The System Information object provides metadata about the SEMP API.   Attribute|Identifying|Write-Only|Deprecated|Opaque :---|:---:|:---:|:---:|:---: platform|||x| sempVersion|||x|    A SEMP client authorized with a minimum access scope/level of \"global/none\" is required to perform this operation.  This has been deprecated since 2.2. /systemInformation was replaced by /about/api.
 
-### Required Parameters
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    opaquePassword := "opaquePassword_example" // string | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the `opaquePassword` parameter. (optional)
+    select_ := []string{"Inner_example"} // []string | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the `select` parameter. (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    api_client := openapiclient.NewAPIClient(configuration)
+    resp, r, err := api_client.SystemInformationApi.GetSystemInformation(context.Background()).OpaquePassword(opaquePassword).Select_(select_).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `SystemInformationApi.GetSystemInformation``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `GetSystemInformation`: SystemInformationResponse
+    fmt.Fprintf(os.Stdout, "Response from `SystemInformationApi.GetSystemInformation`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetSystemInformationRequest struct via the builder pattern
+
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***SystemInformationApiGetSystemInformationOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a SystemInformationApiGetSystemInformationOpts struct
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **opaquePassword** | **optional.String**| Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
- **select_** | [**optional.Interface of []string**](string.md)| Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
+ **opaquePassword** | **string** | Accept opaque attributes in the request or return opaque attributes in the response, encrypted with the specified password. See that documentation for the &#x60;opaquePassword&#x60; parameter. | 
+ **select_** | **[]string** | Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. See the documentation for the &#x60;select&#x60; parameter. | 
 
 ### Return type
 
@@ -36,8 +68,10 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 

@@ -84,7 +84,7 @@ func (r *SolaceQueueReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, err
 	}
 
-	solacequeue.Status.Ready = true
+	solacequeue.Status.OperationalState = "Up"
 
 	err = r.Status().Update(ctx, solacequeue)
 	if err != nil {
@@ -116,7 +116,7 @@ func (r *SolaceQueueReconciler) deleteQueue(ctx context.Context, req ctrl.Reques
 
 	queueName := req.NamespacedName.Name
 	log.Info("Deleting queue", "MsgVpnMame", r.msgVpnName, "QueueName", queueName)
-	_, _, err := r.sempClient.MsgVpnApi.DeleteMsgVpnQueue(r.sempAuth, r.msgVpnName, queueName)
+	_, _, err := r.sempClient.MsgVpnApi.DeleteMsgVpnQueue(r.sempAuth, r.msgVpnName, queueName).Execute()
 	if err != nil {
 		log.Error(err, "Failed to delete queue", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
 		return ctrl.Result{}, err
@@ -130,15 +130,16 @@ func (r *SolaceQueueReconciler) createOrUpdateQueue(ctx context.Context, solaceq
 
 	queueName := solacequeue.ObjectMeta.Name
 	topicSubs := solacequeue.Spec.TopicSubscriptions
+	enabled := true
 
-	_, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnQueue(r.sempAuth, r.msgVpnName, queueName, nil)
+	_, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnQueue(r.sempAuth, r.msgVpnName, queueName).Execute()
 
 	if httpResponse.StatusCode != 200 {
-		queue := semp.MsgVpnQueue{QueueName: queueName, IngressEnabled: true, EgressEnabled: true,
-			Permission: solacequeue.Spec.NonOwnerPermission, Owner: solacequeue.Spec.Owner,
-			AccessType: solacequeue.Spec.AccessType}
+		queue := semp.MsgVpnQueue{QueueName: &queueName, IngressEnabled: &enabled, EgressEnabled: &enabled,
+			Permission: &solacequeue.Spec.NonOwnerPermission, Owner: &solacequeue.Spec.Owner,
+			AccessType: &solacequeue.Spec.AccessType}
 		log.Info("Creating queue", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
-		_, _, err := r.sempClient.MsgVpnApi.CreateMsgVpnQueue(r.sempAuth, queue, r.msgVpnName, nil)
+		_, _, err := r.sempClient.MsgVpnApi.CreateMsgVpnQueue(r.sempAuth, r.msgVpnName).Body(queue).Execute()
 		if err != nil {
 			log.Error(err, "Failed to create queue", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
 			return err
@@ -153,7 +154,7 @@ func (r *SolaceQueueReconciler) createOrUpdateQueue(ctx context.Context, solaceq
 	}
 
 	sempResponse, _, err := r.sempClient.MsgVpnApi.GetMsgVpnQueueSubscriptions(r.sempAuth,
-		r.msgVpnName, queueName, nil)
+		r.msgVpnName, queueName).Execute()
 
 	if err != nil {
 		log.Error(err, "Failed to get queue topic subscriptions", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
@@ -161,9 +162,9 @@ func (r *SolaceQueueReconciler) createOrUpdateQueue(ctx context.Context, solaceq
 	}
 
 	var exTopicSubs []string
-	for idx := range sempResponse.Data {
-		exTopicSub := sempResponse.Data[idx]
-		exTopicSubs = append(exTopicSubs, exTopicSub.SubscriptionTopic)
+	for idx := range *sempResponse.Data {
+		exTopicSub := (*sempResponse.Data)[idx]
+		exTopicSubs = append(exTopicSubs, *exTopicSub.SubscriptionTopic)
 	}
 
 	for _, topicSub := range topicSubs {
@@ -171,7 +172,7 @@ func (r *SolaceQueueReconciler) createOrUpdateQueue(ctx context.Context, solaceq
 			log.Info("Creating topic subcription on queue", "MsgVpnName", r.msgVpnName,
 				"TopicSubscription", topicSub, "QueueName", queueName)
 			_, _, err := r.sempClient.MsgVpnApi.CreateMsgVpnQueueSubscription(r.sempAuth,
-				semp.MsgVpnQueueSubscription{SubscriptionTopic: topicSub}, r.msgVpnName, queueName, nil)
+				r.msgVpnName, queueName).Body(semp.MsgVpnQueueSubscription{SubscriptionTopic: &topicSub}).Execute()
 			if err != nil {
 				log.Error(err, "Failed to create queue topic subscription", "MsgVpnName",
 					r.msgVpnName, "QueueName", queueName, "TopicSubscription", topicSub)
@@ -187,7 +188,8 @@ func (r *SolaceQueueReconciler) createOrUpdateQueue(ctx context.Context, solaceq
 		if !contains(topicSubs, exTopicSub) {
 			log.Info("Deleting topic subcription from queue", "MsgVpnName", r.msgVpnName,
 				"TopicSubscription", exTopicSub, "QueueName", queueName)
-			_, _, err := r.sempClient.MsgVpnApi.DeleteMsgVpnQueueSubscription(r.sempAuth, r.msgVpnName, queueName, url.PathEscape(exTopicSub))
+			_, _, err := r.sempClient.MsgVpnApi.DeleteMsgVpnQueueSubscription(r.sempAuth, r.msgVpnName,
+				queueName, url.PathEscape(exTopicSub)).Execute()
 			if err != nil {
 				log.Error(err, "Failed to delete queue topic subscription", "MsgVpnName",
 					r.msgVpnName, "QueueName", queueName, "TopicSubscription", exTopicSub)
@@ -211,7 +213,8 @@ func contains(s []string, str string) bool {
 // SetupWithManager sets up the controller with the Manager.
 func (r *SolaceQueueReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	cfg := semp.NewConfiguration()
-	cfg.BasePath = os.Getenv("SEMP_URL") + "/SEMP/v2/config"
+	cfg.Scheme = "https"
+	cfg.Host = os.Getenv("SEMP_HOST")
 	r.sempClient = semp.NewAPIClient(cfg)
 
 	r.sempAuth = context.WithValue(context.Background(), semp.ContextBasicAuth, semp.BasicAuth{

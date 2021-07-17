@@ -1,11 +1,103 @@
 # CertAuthorityOcspTlsTrustedCommonNameResponse
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Data** | [***CertAuthorityOcspTlsTrustedCommonName**](CertAuthorityOcspTlsTrustedCommonName.md) |  | [optional] [default to null]
-**Links** | [***CertAuthorityOcspTlsTrustedCommonNameLinks**](CertAuthorityOcspTlsTrustedCommonNameLinks.md) |  | [optional] [default to null]
-**Meta** | [***SempMeta**](SempMeta.md) |  | [default to null]
+**Data** | Pointer to [**CertAuthorityOcspTlsTrustedCommonName**](CertAuthorityOcspTlsTrustedCommonName.md) |  | [optional] 
+**Links** | Pointer to [**CertAuthorityOcspTlsTrustedCommonNameLinks**](CertAuthorityOcspTlsTrustedCommonNameLinks.md) |  | [optional] 
+**Meta** | [**SempMeta**](SempMeta.md) |  | 
+
+## Methods
+
+### NewCertAuthorityOcspTlsTrustedCommonNameResponse
+
+`func NewCertAuthorityOcspTlsTrustedCommonNameResponse(meta SempMeta, ) *CertAuthorityOcspTlsTrustedCommonNameResponse`
+
+NewCertAuthorityOcspTlsTrustedCommonNameResponse instantiates a new CertAuthorityOcspTlsTrustedCommonNameResponse object
+This constructor will assign default values to properties that have it defined,
+and makes sure properties required by API are set, but the set of arguments
+will change when the set of required properties is changed
+
+### NewCertAuthorityOcspTlsTrustedCommonNameResponseWithDefaults
+
+`func NewCertAuthorityOcspTlsTrustedCommonNameResponseWithDefaults() *CertAuthorityOcspTlsTrustedCommonNameResponse`
+
+NewCertAuthorityOcspTlsTrustedCommonNameResponseWithDefaults instantiates a new CertAuthorityOcspTlsTrustedCommonNameResponse object
+This constructor will only assign default values to properties that have it defined,
+but it doesn't guarantee that properties required by API are set
+
+### GetData
+
+`func (o *CertAuthorityOcspTlsTrustedCommonNameResponse) GetData() CertAuthorityOcspTlsTrustedCommonName`
+
+GetData returns the Data field if non-nil, zero value otherwise.
+
+### GetDataOk
+
+`func (o *CertAuthorityOcspTlsTrustedCommonNameResponse) GetDataOk() (*CertAuthorityOcspTlsTrustedCommonName, bool)`
+
+GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetData
+
+`func (o *CertAuthorityOcspTlsTrustedCommonNameResponse) SetData(v CertAuthorityOcspTlsTrustedCommonName)`
+
+SetData sets Data field to given value.
+
+### HasData
+
+`func (o *CertAuthorityOcspTlsTrustedCommonNameResponse) HasData() bool`
+
+HasData returns a boolean if a field has been set.
+
+### GetLinks
+
+`func (o *CertAuthorityOcspTlsTrustedCommonNameResponse) GetLinks() CertAuthorityOcspTlsTrustedCommonNameLinks`
+
+GetLinks returns the Links field if non-nil, zero value otherwise.
+
+### GetLinksOk
+
+`func (o *CertAuthorityOcspTlsTrustedCommonNameResponse) GetLinksOk() (*CertAuthorityOcspTlsTrustedCommonNameLinks, bool)`
+
+GetLinksOk returns a tuple with the Links field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetLinks
+
+`func (o *CertAuthorityOcspTlsTrustedCommonNameResponse) SetLinks(v CertAuthorityOcspTlsTrustedCommonNameLinks)`
+
+SetLinks sets Links field to given value.
+
+### HasLinks
+
+`func (o *CertAuthorityOcspTlsTrustedCommonNameResponse) HasLinks() bool`
+
+HasLinks returns a boolean if a field has been set.
+
+### GetMeta
+
+`func (o *CertAuthorityOcspTlsTrustedCommonNameResponse) GetMeta() SempMeta`
+
+GetMeta returns the Meta field if non-nil, zero value otherwise.
+
+### GetMetaOk
+
+`func (o *CertAuthorityOcspTlsTrustedCommonNameResponse) GetMetaOk() (*SempMeta, bool)`
+
+GetMetaOk returns a tuple with the Meta field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetMeta
+
+`func (o *CertAuthorityOcspTlsTrustedCommonNameResponse) SetMeta(v SempMeta)`
+
+SetMeta sets Meta field to given value.
+
+
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
 

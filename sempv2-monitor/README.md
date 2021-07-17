@@ -1,19 +1,285 @@
-# Go API client for swagger
+# Go API client for openapi
 
-SEMP (starting in `v2`, see note 1) is a RESTful API for configuring, monitoring, and administering a Solace PubSub+ broker.  SEMP uses URIs to address manageable **resources** of the Solace PubSub+ broker. Resources are individual **objects**, **collections** of objects, or (exclusively in the action API) **actions**. This document applies to the following API:   API|Base Path|Purpose|Comments :---|:---|:---|:--- Monitoring|/SEMP/v2/monitor|Querying operational parameters|See note 2    The following APIs are also available:   API|Base Path|Purpose|Comments :---|:---|:---|:--- Action|/SEMP/v2/action|Performing actions|See note 2 Configuration|/SEMP/v2/config|Reading and writing config state|See note 2    Resources are always nouns, with individual objects being singular and collections being plural.  Objects within a collection are identified by an `obj-id`, which follows the collection name with the form `collection-name/obj-id`.  Actions within an object are identified by an `action-id`, which follows the object name with the form `obj-id/action-id`.  Some examples:  ``` /SEMP/v2/config/msgVpns                        ; MsgVpn collection /SEMP/v2/config/msgVpns/a                      ; MsgVpn object named \"a\" /SEMP/v2/config/msgVpns/a/queues               ; Queue collection in MsgVpn \"a\" /SEMP/v2/config/msgVpns/a/queues/b             ; Queue object named \"b\" in MsgVpn \"a\" /SEMP/v2/action/msgVpns/a/queues/b/startReplay ; Action that starts a replay on Queue \"b\" in MsgVpn \"a\" /SEMP/v2/monitor/msgVpns/a/clients             ; Client collection in MsgVpn \"a\" /SEMP/v2/monitor/msgVpns/a/clients/c           ; Client object named \"c\" in MsgVpn \"a\" ```  ## Collection Resources  Collections are unordered lists of objects (unless described as otherwise), and are described by JSON arrays. Each item in the array represents an object in the same manner as the individual object would normally be represented. In the configuration API, the creation of a new object is done through its collection resource.  ## Object and Action Resources  Objects are composed of attributes, actions, collections, and other objects. They are described by JSON objects as name/value pairs. The collections and actions of an object are not contained directly in the object's JSON content; rather the content includes an attribute containing a URI which points to the collections and actions. These contained resources must be managed through this URI. At a minimum, every object has one or more identifying attributes, and its own `uri` attribute which contains the URI pointing to itself.  Actions are also composed of attributes, and are described by JSON objects as name/value pairs. Unlike objects, however, they are not members of a collection and cannot be retrieved, only performed. Actions only exist in the action API.  Attributes in an object or action may have any combination of the following properties:   Property|Meaning|Comments :---|:---|:--- Identifying|Attribute is involved in unique identification of the object, and appears in its URI| Required|Attribute must be provided in the request| Read-Only|Attribute can only be read, not written.|See note 3 Write-Only|Attribute can only be written, not read, unless the attribute is also opaque|See the documentation for the opaque property Requires-Disable|Attribute can only be changed when object is disabled| Deprecated|Attribute is deprecated, and will disappear in the next SEMP version| Opaque|Attribute can be set or retrieved in opaque form when the `opaquePassword` query parameter is present|See the `opaquePassword` query parameter documentation    In some requests, certain attributes may only be provided in certain combinations with other attributes:   Relationship|Meaning :---|:--- Requires|Attribute may only be changed by a request if a particular attribute or combination of attributes is also provided in the request Conflicts|Attribute may only be provided in a request if a particular attribute or combination of attributes is not also provided in the request    In the monitoring API, any non-identifying attribute may not be returned in a GET.  ## HTTP Methods  The following HTTP methods manipulate resources in accordance with these general principles. Note that some methods are only used in certain APIs:   Method|Resource|Meaning|Request Body|Response Body|Missing Request Attributes :---|:---|:---|:---|:---|:--- POST|Collection|Create object|Initial attribute values|Object attributes and metadata|Set to default PUT|Object|Create or replace object (see note 5)|New attribute values|Object attributes and metadata|Set to default, with certain exceptions (see note 4) PUT|Action|Performs action|Action arguments|Action metadata|N/A PATCH|Object|Update object|New attribute values|Object attributes and metadata|unchanged DELETE|Object|Delete object|Empty|Object metadata|N/A GET|Object|Get object|Empty|Object attributes and metadata|N/A GET|Collection|Get collection|Empty|Object attributes and collection metadata|N/A    ## Common Query Parameters  The following are some common query parameters that are supported by many method/URI combinations. Individual URIs may document additional parameters. Note that multiple query parameters can be used together in a single URI, separated by the ampersand character. For example:  ``` ; Request for the MsgVpns collection using two hypothetical query parameters ; \"q1\" and \"q2\" with values \"val1\" and \"val2\" respectively /SEMP/v2/monitor/msgVpns?q1=val1&q2=val2 ```  ### select  Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. Use this query parameter to limit the size of the returned data for each returned object, return only those fields that are desired, or exclude fields that are not desired.  The value of `select` is a comma-separated list of attribute names. If the list contains attribute names that are not prefaced by `-`, only those attributes are included in the response. If the list contains attribute names that are prefaced by `-`, those attributes are excluded from the response. If the list contains both types, then the difference of the first set of attributes and the second set of attributes is returned. If the list is empty (i.e. `select=`), no attributes are returned.  All attributes that are prefaced by `-` must follow all attributes that are not prefaced by `-`. In addition, each attribute name in the list must match at least one attribute in the object.  Names may include the `*` wildcard (zero or more characters). Nested attribute names are supported using periods (e.g. `parentName.childName`).  Some examples:  ``` ; List of all MsgVpn names /SEMP/v2/monitor/msgVpns?select=msgVpnName ; List of all MsgVpn and their attributes except for their names /SEMP/v2/monitor/msgVpns?select=-msgVpnName ; Authentication attributes of MsgVpn \"finance\" /SEMP/v2/monitor/msgVpns/finance?select=authentication* ; All attributes of MsgVpn \"finance\" except for authentication attributes /SEMP/v2/monitor/msgVpns/finance?select=-authentication* ; Access related attributes of Queue \"orderQ\" of MsgVpn \"finance\" /SEMP/v2/monitor/msgVpns/finance/queues/orderQ?select=owner,permission ```  ### where  Include in the response only objects where certain conditions are true. Use this query parameter to limit which objects are returned to those whose attribute values meet the given conditions.  The value of `where` is a comma-separated list of expressions. All expressions must be true for the object to be included in the response. Each expression takes the form:  ``` expression  = attribute-name OP value OP          = '==' | '!=' | '&lt;' | '&gt;' | '&lt;=' | '&gt;=' ```  `value` may be a number, string, `true`, or `false`, as appropriate for the type of `attribute-name`. Greater-than and less-than comparisons only work for numbers. A `*` in a string `value` is interpreted as a wildcard (zero or more characters). Some examples:  ``` ; Only enabled MsgVpns /SEMP/v2/monitor/msgVpns?where=enabled==true ; Only MsgVpns using basic non-LDAP authentication /SEMP/v2/monitor/msgVpns?where=authenticationBasicEnabled==true,authenticationBasicType!=ldap ; Only MsgVpns that allow more than 100 client connections /SEMP/v2/monitor/msgVpns?where=maxConnectionCount>100 ; Only MsgVpns with msgVpnName starting with \"B\": /SEMP/v2/monitor/msgVpns?where=msgVpnName==B* ```  ### count  Limit the count of objects in the response. This can be useful to limit the size of the response for large collections. The minimum value for `count` is `1` and the default is `10`. There is also a per-collection maximum value to limit request handling time. For example:  ``` ; Up to 25 MsgVpns /SEMP/v2/monitor/msgVpns?count=25 ```  ### cursor  The cursor, or position, for the next page of objects. Cursors are opaque data that should not be created or interpreted by SEMP clients, and should only be used as described below.  When a request is made for a collection and there may be additional objects available for retrieval that are not included in the initial response, the response will include a `cursorQuery` field containing a cursor. The value of this field can be specified in the `cursor` query parameter of a subsequent request to retrieve the next page of objects. For convenience, an appropriate URI is constructed automatically by the broker and included in the `nextPageUri` field of the response. This URI can be used directly to retrieve the next page of objects.  ### opaquePassword  Attributes with the opaque property are also write-only and so cannot normally be retrieved in a GET. However, when a password is provided in the `opaquePassword` query parameter, attributes with the opaque property are retrieved in a GET in opaque form, encrypted with this password. The query parameter can also be used on a POST, PATCH, or PUT to set opaque attributes using opaque attribute values retrieved in a GET, so long as:  1. the same password that was used to retrieve the opaque attribute values is provided; and  2. the broker to which the request is being sent has the same major and minor SEMP version as the broker that produced the opaque attribute values.  The password provided in the query parameter must be a minimum of 8 characters and a maximum of 128 characters.  The query parameter can only be used in the configuration API, and only over HTTPS.  ## Authentication  When a client makes its first SEMPv2 request, it must supply a username and password using HTTP Basic authentication.  If authentication is successful, the broker returns a cookie containing a session key. The client can omit the username and password from subsequent requests, because the broker now uses the session cookie for authentication instead. When the session expires or is deleted, the client must provide the username and password again, and the broker creates a new session.  There are a limited number of session slots available on the broker. The broker returns 529 No SEMP Session Available if it is not able to allocate a session. For this reason, all clients that use SEMPv2 should support cookies.  If certain attributes—such as a user's password—are changed, the broker automatically deletes the affected sessions. These attributes are documented below. However, changes in external user configuration data stored on a RADIUS or LDAP server do not trigger the broker to delete the associated session(s), therefore you must do this manually, if required.  A client can retrieve its current session information using the /about/user endpoint, delete its own session using the /about/user/logout endpoint, and manage all sessions using the /sessions endpoint.  ## Help  Visit [our website](https://solace.com) to learn more about Solace.  You can also download the SEMP API specifications by clicking [here](https://solace.com/downloads/).  If you need additional support, please contact us at [support@solace.com](mailto:support@solace.com).  ## Notes  Note|Description :---:|:--- 1|This specification defines SEMP starting in \"v2\", and not the original SEMP \"v1\" interface. Request and response formats between \"v1\" and \"v2\" are entirely incompatible, although both protocols share a common port configuration on the Solace PubSub+ broker. They are differentiated by the initial portion of the URI path, one of either \"/SEMP/\" or \"/SEMP/v2/\" 2|This API is partially implemented. Only a subset of all objects are available. 3|Read-only attributes may appear in POST and PUT/PATCH requests. However, if a read-only attribute is not marked as identifying, it will be ignored during a PUT/PATCH. 4|On a PUT, if the SEMP user is not authorized to modify the attribute, its value is left unchanged rather than set to default. In addition, the values of write-only attributes are not set to their defaults on a PUT, except in the following two cases: there is a mutual requires relationship with another non-write-only attribute, both attributes are absent from the request, and the non-write-only attribute is not currently set to its default value; or the attribute is also opaque and the `opaquePassword` query parameter is provided in the request. 5|On a PUT, if the object does not exist, it is created first.  
+SEMP (starting in `v2`, see note 1) is a RESTful API for configuring, monitoring, and administering a Solace PubSub+ broker.
+
+SEMP uses URIs to address manageable **resources** of the Solace PubSub+ broker. Resources are individual **objects**, **collections** of objects, or (exclusively in the action API) **actions**. This document applies to the following API:
+
+
+API|Base Path|Purpose|Comments
+:---|:---|:---|:---
+Monitoring|/SEMP/v2/monitor|Querying operational parameters|See note 2
+
+
+
+The following APIs are also available:
+
+
+API|Base Path|Purpose|Comments
+:---|:---|:---|:---
+Action|/SEMP/v2/action|Performing actions|See note 2
+Configuration|/SEMP/v2/config|Reading and writing config state|See note 2
+
+
+
+Resources are always nouns, with individual objects being singular and collections being plural.
+
+Objects within a collection are identified by an `obj-id`, which follows the collection name with the form `collection-name/obj-id`.
+
+Actions within an object are identified by an `action-id`, which follows the object name with the form `obj-id/action-id`.
+
+Some examples:
+
+```
+/SEMP/v2/config/msgVpns                        ; MsgVpn collection
+/SEMP/v2/config/msgVpns/a                      ; MsgVpn object named \"a\"
+/SEMP/v2/config/msgVpns/a/queues               ; Queue collection in MsgVpn \"a\"
+/SEMP/v2/config/msgVpns/a/queues/b             ; Queue object named \"b\" in MsgVpn \"a\"
+/SEMP/v2/action/msgVpns/a/queues/b/startReplay ; Action that starts a replay on Queue \"b\" in MsgVpn \"a\"
+/SEMP/v2/monitor/msgVpns/a/clients             ; Client collection in MsgVpn \"a\"
+/SEMP/v2/monitor/msgVpns/a/clients/c           ; Client object named \"c\" in MsgVpn \"a\"
+```
+
+## Collection Resources
+
+Collections are unordered lists of objects (unless described as otherwise), and are described by JSON arrays. Each item in the array represents an object in the same manner as the individual object would normally be represented. In the configuration API, the creation of a new object is done through its collection resource.
+
+## Object and Action Resources
+
+Objects are composed of attributes, actions, collections, and other objects. They are described by JSON objects as name/value pairs. The collections and actions of an object are not contained directly in the object's JSON content; rather the content includes an attribute containing a URI which points to the collections and actions. These contained resources must be managed through this URI. At a minimum, every object has one or more identifying attributes, and its own `uri` attribute which contains the URI pointing to itself.
+
+Actions are also composed of attributes, and are described by JSON objects as name/value pairs. Unlike objects, however, they are not members of a collection and cannot be retrieved, only performed. Actions only exist in the action API.
+
+Attributes in an object or action may have any combination of the following properties:
+
+
+Property|Meaning|Comments
+:---|:---|:---
+Identifying|Attribute is involved in unique identification of the object, and appears in its URI|
+Required|Attribute must be provided in the request|
+Read-Only|Attribute can only be read, not written.|See note 3
+Write-Only|Attribute can only be written, not read, unless the attribute is also opaque|See the documentation for the opaque property
+Requires-Disable|Attribute can only be changed when object is disabled|
+Deprecated|Attribute is deprecated, and will disappear in the next SEMP version|
+Opaque|Attribute can be set or retrieved in opaque form when the `opaquePassword` query parameter is present|See the `opaquePassword` query parameter documentation
+
+
+
+In some requests, certain attributes may only be provided in certain combinations with other attributes:
+
+
+Relationship|Meaning
+:---|:---
+Requires|Attribute may only be changed by a request if a particular attribute or combination of attributes is also provided in the request
+Conflicts|Attribute may only be provided in a request if a particular attribute or combination of attributes is not also provided in the request
+
+
+
+In the monitoring API, any non-identifying attribute may not be returned in a GET.
+
+## HTTP Methods
+
+The following HTTP methods manipulate resources in accordance with these general principles. Note that some methods are only used in certain APIs:
+
+
+Method|Resource|Meaning|Request Body|Response Body|Missing Request Attributes
+:---|:---|:---|:---|:---|:---
+POST|Collection|Create object|Initial attribute values|Object attributes and metadata|Set to default
+PUT|Object|Create or replace object (see note 5)|New attribute values|Object attributes and metadata|Set to default, with certain exceptions (see note 4)
+PUT|Action|Performs action|Action arguments|Action metadata|N/A
+PATCH|Object|Update object|New attribute values|Object attributes and metadata|unchanged
+DELETE|Object|Delete object|Empty|Object metadata|N/A
+GET|Object|Get object|Empty|Object attributes and metadata|N/A
+GET|Collection|Get collection|Empty|Object attributes and collection metadata|N/A
+
+
+
+## Common Query Parameters
+
+The following are some common query parameters that are supported by many method/URI combinations. Individual URIs may document additional parameters. Note that multiple query parameters can be used together in a single URI, separated by the ampersand character. For example:
+
+```
+; Request for the MsgVpns collection using two hypothetical query parameters
+; \"q1\" and \"q2\" with values \"val1\" and \"val2\" respectively
+/SEMP/v2/monitor/msgVpns?q1=val1&q2=val2
+```
+
+### select
+
+Include in the response only selected attributes of the object, or exclude from the response selected attributes of the object. Use this query parameter to limit the size of the returned data for each returned object, return only those fields that are desired, or exclude fields that are not desired.
+
+The value of `select` is a comma-separated list of attribute names. If the list contains attribute names that are not prefaced by `-`, only those attributes are included in the response. If the list contains attribute names that are prefaced by `-`, those attributes are excluded from the response. If the list contains both types, then the difference of the first set of attributes and the second set of attributes is returned. If the list is empty (i.e. `select=`), no attributes are returned.
+
+All attributes that are prefaced by `-` must follow all attributes that are not prefaced by `-`. In addition, each attribute name in the list must match at least one attribute in the object.
+
+Names may include the `*` wildcard (zero or more characters). Nested attribute names are supported using periods (e.g. `parentName.childName`).
+
+Some examples:
+
+```
+; List of all MsgVpn names
+/SEMP/v2/monitor/msgVpns?select=msgVpnName
+; List of all MsgVpn and their attributes except for their names
+/SEMP/v2/monitor/msgVpns?select=-msgVpnName
+; Authentication attributes of MsgVpn \"finance\"
+/SEMP/v2/monitor/msgVpns/finance?select=authentication*
+; All attributes of MsgVpn \"finance\" except for authentication attributes
+/SEMP/v2/monitor/msgVpns/finance?select=-authentication*
+; Access related attributes of Queue \"orderQ\" of MsgVpn \"finance\"
+/SEMP/v2/monitor/msgVpns/finance/queues/orderQ?select=owner,permission
+```
+
+### where
+
+Include in the response only objects where certain conditions are true. Use this query parameter to limit which objects are returned to those whose attribute values meet the given conditions.
+
+The value of `where` is a comma-separated list of expressions. All expressions must be true for the object to be included in the response. Each expression takes the form:
+
+```
+expression  = attribute-name OP value
+OP          = '==' | '!=' | '&lt;' | '&gt;' | '&lt;=' | '&gt;='
+```
+
+`value` may be a number, string, `true`, or `false`, as appropriate for the type of `attribute-name`. Greater-than and less-than comparisons only work for numbers. A `*` in a string `value` is interpreted as a wildcard (zero or more characters). Some examples:
+
+```
+; Only enabled MsgVpns
+/SEMP/v2/monitor/msgVpns?where=enabled==true
+; Only MsgVpns using basic non-LDAP authentication
+/SEMP/v2/monitor/msgVpns?where=authenticationBasicEnabled==true,authenticationBasicType!=ldap
+; Only MsgVpns that allow more than 100 client connections
+/SEMP/v2/monitor/msgVpns?where=maxConnectionCount>100
+; Only MsgVpns with msgVpnName starting with \"B\":
+/SEMP/v2/monitor/msgVpns?where=msgVpnName==B*
+```
+
+### count
+
+Limit the count of objects in the response. This can be useful to limit the size of the response for large collections. The minimum value for `count` is `1` and the default is `10`. There is also a per-collection maximum value to limit request handling time. For example:
+
+```
+; Up to 25 MsgVpns
+/SEMP/v2/monitor/msgVpns?count=25
+```
+
+### cursor
+
+The cursor, or position, for the next page of objects. Cursors are opaque data that should not be created or interpreted by SEMP clients, and should only be used as described below.
+
+When a request is made for a collection and there may be additional objects available for retrieval that are not included in the initial response, the response will include a `cursorQuery` field containing a cursor. The value of this field can be specified in the `cursor` query parameter of a subsequent request to retrieve the next page of objects. For convenience, an appropriate URI is constructed automatically by the broker and included in the `nextPageUri` field of the response. This URI can be used directly to retrieve the next page of objects.
+
+### opaquePassword
+
+Attributes with the opaque property are also write-only and so cannot normally be retrieved in a GET. However, when a password is provided in the `opaquePassword` query parameter, attributes with the opaque property are retrieved in a GET in opaque form, encrypted with this password. The query parameter can also be used on a POST, PATCH, or PUT to set opaque attributes using opaque attribute values retrieved in a GET, so long as:
+
+1. the same password that was used to retrieve the opaque attribute values is provided; and
+
+2. the broker to which the request is being sent has the same major and minor SEMP version as the broker that produced the opaque attribute values.
+
+The password provided in the query parameter must be a minimum of 8 characters and a maximum of 128 characters.
+
+The query parameter can only be used in the configuration API, and only over HTTPS.
+
+## Authentication
+
+When a client makes its first SEMPv2 request, it must supply a username and password using HTTP Basic authentication.
+
+If authentication is successful, the broker returns a cookie containing a session key. The client can omit the username and password from subsequent requests, because the broker now uses the session cookie for authentication instead. When the session expires or is deleted, the client must provide the username and password again, and the broker creates a new session.
+
+There are a limited number of session slots available on the broker. The broker returns 529 No SEMP Session Available if it is not able to allocate a session. For this reason, all clients that use SEMPv2 should support cookies.
+
+If certain attributes—such as a user's password—are changed, the broker automatically deletes the affected sessions. These attributes are documented below. However, changes in external user configuration data stored on a RADIUS or LDAP server do not trigger the broker to delete the associated session(s), therefore you must do this manually, if required.
+
+A client can retrieve its current session information using the /about/user endpoint, delete its own session using the /about/user/logout endpoint, and manage all sessions using the /sessions endpoint.
+
+## Help
+
+Visit [our website](https://solace.com) to learn more about Solace.
+
+You can also download the SEMP API specifications by clicking [here](https://solace.com/downloads/).
+
+If you need additional support, please contact us at [support@solace.com](mailto:support@solace.com).
+
+## Notes
+
+Note|Description
+:---:|:---
+1|This specification defines SEMP starting in \"v2\", and not the original SEMP \"v1\" interface. Request and response formats between \"v1\" and \"v2\" are entirely incompatible, although both protocols share a common port configuration on the Solace PubSub+ broker. They are differentiated by the initial portion of the URI path, one of either \"/SEMP/\" or \"/SEMP/v2/\"
+2|This API is partially implemented. Only a subset of all objects are available.
+3|Read-only attributes may appear in POST and PUT/PATCH requests. However, if a read-only attribute is not marked as identifying, it will be ignored during a PUT/PATCH.
+4|On a PUT, if the SEMP user is not authorized to modify the attribute, its value is left unchanged rather than set to default. In addition, the values of write-only attributes are not set to their defaults on a PUT, except in the following two cases: there is a mutual requires relationship with another non-write-only attribute, both attributes are absent from the request, and the non-write-only attribute is not currently set to its default value; or the attribute is also opaque and the `opaquePassword` query parameter is provided in the request.
+5|On a PUT, if the object does not exist, it is created first.
+
+
 
 ## Overview
-This API client was generated by the [swagger-codegen](https://github.com/swagger-api/swagger-codegen) project.  By using the [swagger-spec](https://github.com/swagger-api/swagger-spec) from a remote server, you can easily generate an API client.
+This API client was generated by the [OpenAPI Generator](https://openapi-generator.tech) project.  By using the [OpenAPI-spec](https://www.openapis.org/) from a remote server, you can easily generate an API client.
 
 - API version: 2.21
 - Package version: 1.0.0
-- Build package: io.swagger.codegen.v3.generators.go.GoClientCodegen
+- Build package: org.openapitools.codegen.languages.GoClientCodegen
 For more information, please visit [http://www.solace.com](http://www.solace.com)
 
 ## Installation
+
+Install the following dependencies:
+
+```shell
+go get github.com/stretchr/testify/assert
+go get golang.org/x/oauth2
+go get golang.org/x/net/context
+```
+
 Put the package under your project folder and add the following in import:
+
 ```golang
-import "./swagger"
+import sw "./openapi"
+```
+
+To use a proxy, set the environment variable `HTTP_PROXY`:
+
+```golang
+os.Setenv("HTTP_PROXY", "http://proxy_name:proxy_port")
+```
+
+## Configuration of Server URL
+
+Default configuration comes with `Servers` field that contains server objects as defined in the OpenAPI specification.
+
+### Select Server Configuration
+
+For using other server than the one defined on index 0 set context value `sw.ContextServerIndex` of type `int`.
+
+```golang
+ctx := context.WithValue(context.Background(), sw.ContextServerIndex, 1)
+```
+
+### Templated Server URL
+
+Templated server URL is formatted using default variables from configuration or from context value `sw.ContextServerVariables` of type `map[string]string`.
+
+```golang
+ctx := context.WithValue(context.Background(), sw.ContextServerVariables, map[string]string{
+	"basePath": "v2",
+})
+```
+
+Note, enum values are always validated and all unused variables are silently ignored.
+
+### URLs Configuration per Operation
+
+Each operation can use different server URL defined using `OperationServers` map in the `Configuration`.
+An operation is uniquely identifield by `"{classname}Service.{nickname}"` string.
+Similar rules for overriding default operation server index and variables applies by using `sw.ContextOperationServerIndices` and `sw.ContextOperationServerVariables` context maps.
+
+```
+ctx := context.WithValue(context.Background(), sw.ContextOperationServerIndices, map[string]int{
+	"{classname}Service.{nickname}": 2,
+})
+ctx = context.WithValue(context.Background(), sw.ContextOperationServerVariables, map[string]map[string]string{
+	"{classname}Service.{nickname}": {
+		"port": "8443",
+	},
+})
 ```
 
 ## Documentation for API Endpoints
@@ -454,14 +720,12 @@ Class | Method | HTTP request | Description
 *VirtualHostnameApi* | [**GetVirtualHostname**](docs/VirtualHostnameApi.md#getvirtualhostname) | **Get** /virtualHostnames/{virtualHostname} | Get a Virtual Hostname object.
 *VirtualHostnameApi* | [**GetVirtualHostnames**](docs/VirtualHostnameApi.md#getvirtualhostnames) | **Get** /virtualHostnames | Get a list of Virtual Hostname objects.
 
+
 ## Documentation For Models
 
- - [About](docs/About.md)
  - [AboutApi](docs/AboutApi.md)
- - [AboutApiCollections](docs/AboutApiCollections.md)
  - [AboutApiLinks](docs/AboutApiLinks.md)
  - [AboutApiResponse](docs/AboutApiResponse.md)
- - [AboutCollections](docs/AboutCollections.md)
  - [AboutLinks](docs/AboutLinks.md)
  - [AboutResponse](docs/AboutResponse.md)
  - [AboutUser](docs/AboutUser.md)
@@ -469,7 +733,6 @@ Class | Method | HTTP request | Description
  - [AboutUserCollectionsMsgvpns](docs/AboutUserCollectionsMsgvpns.md)
  - [AboutUserLinks](docs/AboutUserLinks.md)
  - [AboutUserMsgVpn](docs/AboutUserMsgVpn.md)
- - [AboutUserMsgVpnCollections](docs/AboutUserMsgVpnCollections.md)
  - [AboutUserMsgVpnLinks](docs/AboutUserMsgVpnLinks.md)
  - [AboutUserMsgVpnResponse](docs/AboutUserMsgVpnResponse.md)
  - [AboutUserMsgVpnsResponse](docs/AboutUserMsgVpnsResponse.md)
@@ -492,7 +755,6 @@ Class | Method | HTTP request | Description
  - [CertAuthorityCollectionsOcsptlstrustedcommonnames](docs/CertAuthorityCollectionsOcsptlstrustedcommonnames.md)
  - [CertAuthorityLinks](docs/CertAuthorityLinks.md)
  - [CertAuthorityOcspTlsTrustedCommonName](docs/CertAuthorityOcspTlsTrustedCommonName.md)
- - [CertAuthorityOcspTlsTrustedCommonNameCollections](docs/CertAuthorityOcspTlsTrustedCommonNameCollections.md)
  - [CertAuthorityOcspTlsTrustedCommonNameLinks](docs/CertAuthorityOcspTlsTrustedCommonNameLinks.md)
  - [CertAuthorityOcspTlsTrustedCommonNameResponse](docs/CertAuthorityOcspTlsTrustedCommonNameResponse.md)
  - [CertAuthorityOcspTlsTrustedCommonNamesResponse](docs/CertAuthorityOcspTlsTrustedCommonNamesResponse.md)
@@ -503,7 +765,6 @@ Class | Method | HTTP request | Description
  - [ClientCertAuthorityCollectionsOcsptlstrustedcommonnames](docs/ClientCertAuthorityCollectionsOcsptlstrustedcommonnames.md)
  - [ClientCertAuthorityLinks](docs/ClientCertAuthorityLinks.md)
  - [ClientCertAuthorityOcspTlsTrustedCommonName](docs/ClientCertAuthorityOcspTlsTrustedCommonName.md)
- - [ClientCertAuthorityOcspTlsTrustedCommonNameCollections](docs/ClientCertAuthorityOcspTlsTrustedCommonNameCollections.md)
  - [ClientCertAuthorityOcspTlsTrustedCommonNameLinks](docs/ClientCertAuthorityOcspTlsTrustedCommonNameLinks.md)
  - [ClientCertAuthorityOcspTlsTrustedCommonNameResponse](docs/ClientCertAuthorityOcspTlsTrustedCommonNameResponse.md)
  - [ClientCertAuthorityOcspTlsTrustedCommonNamesResponse](docs/ClientCertAuthorityOcspTlsTrustedCommonNamesResponse.md)
@@ -514,7 +775,6 @@ Class | Method | HTTP request | Description
  - [DmrClusterCollectionsTopologyissues](docs/DmrClusterCollectionsTopologyissues.md)
  - [DmrClusterLink](docs/DmrClusterLink.md)
  - [DmrClusterLinkChannel](docs/DmrClusterLinkChannel.md)
- - [DmrClusterLinkChannelCollections](docs/DmrClusterLinkChannelCollections.md)
  - [DmrClusterLinkChannelLinks](docs/DmrClusterLinkChannelLinks.md)
  - [DmrClusterLinkChannelResponse](docs/DmrClusterLinkChannelResponse.md)
  - [DmrClusterLinkChannelsResponse](docs/DmrClusterLinkChannelsResponse.md)
@@ -524,13 +784,11 @@ Class | Method | HTTP request | Description
  - [DmrClusterLinkCollectionsTlstrustedcommonnames](docs/DmrClusterLinkCollectionsTlstrustedcommonnames.md)
  - [DmrClusterLinkLinks](docs/DmrClusterLinkLinks.md)
  - [DmrClusterLinkRemoteAddress](docs/DmrClusterLinkRemoteAddress.md)
- - [DmrClusterLinkRemoteAddressCollections](docs/DmrClusterLinkRemoteAddressCollections.md)
  - [DmrClusterLinkRemoteAddressLinks](docs/DmrClusterLinkRemoteAddressLinks.md)
  - [DmrClusterLinkRemoteAddressResponse](docs/DmrClusterLinkRemoteAddressResponse.md)
  - [DmrClusterLinkRemoteAddressesResponse](docs/DmrClusterLinkRemoteAddressesResponse.md)
  - [DmrClusterLinkResponse](docs/DmrClusterLinkResponse.md)
  - [DmrClusterLinkTlsTrustedCommonName](docs/DmrClusterLinkTlsTrustedCommonName.md)
- - [DmrClusterLinkTlsTrustedCommonNameCollections](docs/DmrClusterLinkTlsTrustedCommonNameCollections.md)
  - [DmrClusterLinkTlsTrustedCommonNameLinks](docs/DmrClusterLinkTlsTrustedCommonNameLinks.md)
  - [DmrClusterLinkTlsTrustedCommonNameResponse](docs/DmrClusterLinkTlsTrustedCommonNameResponse.md)
  - [DmrClusterLinkTlsTrustedCommonNamesResponse](docs/DmrClusterLinkTlsTrustedCommonNamesResponse.md)
@@ -538,14 +796,12 @@ Class | Method | HTTP request | Description
  - [DmrClusterLinksResponse](docs/DmrClusterLinksResponse.md)
  - [DmrClusterResponse](docs/DmrClusterResponse.md)
  - [DmrClusterTopologyIssue](docs/DmrClusterTopologyIssue.md)
- - [DmrClusterTopologyIssueCollections](docs/DmrClusterTopologyIssueCollections.md)
  - [DmrClusterTopologyIssueLinks](docs/DmrClusterTopologyIssueLinks.md)
  - [DmrClusterTopologyIssueResponse](docs/DmrClusterTopologyIssueResponse.md)
  - [DmrClusterTopologyIssuesResponse](docs/DmrClusterTopologyIssuesResponse.md)
  - [DmrClustersResponse](docs/DmrClustersResponse.md)
  - [DomainCertAuthoritiesResponse](docs/DomainCertAuthoritiesResponse.md)
  - [DomainCertAuthority](docs/DomainCertAuthority.md)
- - [DomainCertAuthorityCollections](docs/DomainCertAuthorityCollections.md)
  - [DomainCertAuthorityLinks](docs/DomainCertAuthorityLinks.md)
  - [DomainCertAuthorityResponse](docs/DomainCertAuthorityResponse.md)
  - [EventThreshold](docs/EventThreshold.md)
@@ -554,7 +810,6 @@ Class | Method | HTTP request | Description
  - [MsgVpn](docs/MsgVpn.md)
  - [MsgVpnAclProfile](docs/MsgVpnAclProfile.md)
  - [MsgVpnAclProfileClientConnectException](docs/MsgVpnAclProfileClientConnectException.md)
- - [MsgVpnAclProfileClientConnectExceptionCollections](docs/MsgVpnAclProfileClientConnectExceptionCollections.md)
  - [MsgVpnAclProfileClientConnectExceptionLinks](docs/MsgVpnAclProfileClientConnectExceptionLinks.md)
  - [MsgVpnAclProfileClientConnectExceptionResponse](docs/MsgVpnAclProfileClientConnectExceptionResponse.md)
  - [MsgVpnAclProfileClientConnectExceptionsResponse](docs/MsgVpnAclProfileClientConnectExceptionsResponse.md)
@@ -567,39 +822,32 @@ Class | Method | HTTP request | Description
  - [MsgVpnAclProfileCollectionsSubscribetopicexceptions](docs/MsgVpnAclProfileCollectionsSubscribetopicexceptions.md)
  - [MsgVpnAclProfileLinks](docs/MsgVpnAclProfileLinks.md)
  - [MsgVpnAclProfilePublishException](docs/MsgVpnAclProfilePublishException.md)
- - [MsgVpnAclProfilePublishExceptionCollections](docs/MsgVpnAclProfilePublishExceptionCollections.md)
  - [MsgVpnAclProfilePublishExceptionLinks](docs/MsgVpnAclProfilePublishExceptionLinks.md)
  - [MsgVpnAclProfilePublishExceptionResponse](docs/MsgVpnAclProfilePublishExceptionResponse.md)
  - [MsgVpnAclProfilePublishExceptionsResponse](docs/MsgVpnAclProfilePublishExceptionsResponse.md)
  - [MsgVpnAclProfilePublishTopicException](docs/MsgVpnAclProfilePublishTopicException.md)
- - [MsgVpnAclProfilePublishTopicExceptionCollections](docs/MsgVpnAclProfilePublishTopicExceptionCollections.md)
  - [MsgVpnAclProfilePublishTopicExceptionLinks](docs/MsgVpnAclProfilePublishTopicExceptionLinks.md)
  - [MsgVpnAclProfilePublishTopicExceptionResponse](docs/MsgVpnAclProfilePublishTopicExceptionResponse.md)
  - [MsgVpnAclProfilePublishTopicExceptionsResponse](docs/MsgVpnAclProfilePublishTopicExceptionsResponse.md)
  - [MsgVpnAclProfileResponse](docs/MsgVpnAclProfileResponse.md)
  - [MsgVpnAclProfileSubscribeException](docs/MsgVpnAclProfileSubscribeException.md)
- - [MsgVpnAclProfileSubscribeExceptionCollections](docs/MsgVpnAclProfileSubscribeExceptionCollections.md)
  - [MsgVpnAclProfileSubscribeExceptionLinks](docs/MsgVpnAclProfileSubscribeExceptionLinks.md)
  - [MsgVpnAclProfileSubscribeExceptionResponse](docs/MsgVpnAclProfileSubscribeExceptionResponse.md)
  - [MsgVpnAclProfileSubscribeExceptionsResponse](docs/MsgVpnAclProfileSubscribeExceptionsResponse.md)
  - [MsgVpnAclProfileSubscribeShareNameException](docs/MsgVpnAclProfileSubscribeShareNameException.md)
- - [MsgVpnAclProfileSubscribeShareNameExceptionCollections](docs/MsgVpnAclProfileSubscribeShareNameExceptionCollections.md)
  - [MsgVpnAclProfileSubscribeShareNameExceptionLinks](docs/MsgVpnAclProfileSubscribeShareNameExceptionLinks.md)
  - [MsgVpnAclProfileSubscribeShareNameExceptionResponse](docs/MsgVpnAclProfileSubscribeShareNameExceptionResponse.md)
  - [MsgVpnAclProfileSubscribeShareNameExceptionsResponse](docs/MsgVpnAclProfileSubscribeShareNameExceptionsResponse.md)
  - [MsgVpnAclProfileSubscribeTopicException](docs/MsgVpnAclProfileSubscribeTopicException.md)
- - [MsgVpnAclProfileSubscribeTopicExceptionCollections](docs/MsgVpnAclProfileSubscribeTopicExceptionCollections.md)
  - [MsgVpnAclProfileSubscribeTopicExceptionLinks](docs/MsgVpnAclProfileSubscribeTopicExceptionLinks.md)
  - [MsgVpnAclProfileSubscribeTopicExceptionResponse](docs/MsgVpnAclProfileSubscribeTopicExceptionResponse.md)
  - [MsgVpnAclProfileSubscribeTopicExceptionsResponse](docs/MsgVpnAclProfileSubscribeTopicExceptionsResponse.md)
  - [MsgVpnAclProfilesResponse](docs/MsgVpnAclProfilesResponse.md)
  - [MsgVpnAuthenticationOauthProvider](docs/MsgVpnAuthenticationOauthProvider.md)
- - [MsgVpnAuthenticationOauthProviderCollections](docs/MsgVpnAuthenticationOauthProviderCollections.md)
  - [MsgVpnAuthenticationOauthProviderLinks](docs/MsgVpnAuthenticationOauthProviderLinks.md)
  - [MsgVpnAuthenticationOauthProviderResponse](docs/MsgVpnAuthenticationOauthProviderResponse.md)
  - [MsgVpnAuthenticationOauthProvidersResponse](docs/MsgVpnAuthenticationOauthProvidersResponse.md)
  - [MsgVpnAuthorizationGroup](docs/MsgVpnAuthorizationGroup.md)
- - [MsgVpnAuthorizationGroupCollections](docs/MsgVpnAuthorizationGroupCollections.md)
  - [MsgVpnAuthorizationGroupLinks](docs/MsgVpnAuthorizationGroupLinks.md)
  - [MsgVpnAuthorizationGroupResponse](docs/MsgVpnAuthorizationGroupResponse.md)
  - [MsgVpnAuthorizationGroupsResponse](docs/MsgVpnAuthorizationGroupsResponse.md)
@@ -612,24 +860,20 @@ Class | Method | HTTP request | Description
  - [MsgVpnBridgeCounter](docs/MsgVpnBridgeCounter.md)
  - [MsgVpnBridgeLinks](docs/MsgVpnBridgeLinks.md)
  - [MsgVpnBridgeLocalSubscription](docs/MsgVpnBridgeLocalSubscription.md)
- - [MsgVpnBridgeLocalSubscriptionCollections](docs/MsgVpnBridgeLocalSubscriptionCollections.md)
  - [MsgVpnBridgeLocalSubscriptionLinks](docs/MsgVpnBridgeLocalSubscriptionLinks.md)
  - [MsgVpnBridgeLocalSubscriptionResponse](docs/MsgVpnBridgeLocalSubscriptionResponse.md)
  - [MsgVpnBridgeLocalSubscriptionsResponse](docs/MsgVpnBridgeLocalSubscriptionsResponse.md)
  - [MsgVpnBridgeRate](docs/MsgVpnBridgeRate.md)
  - [MsgVpnBridgeRemoteMsgVpn](docs/MsgVpnBridgeRemoteMsgVpn.md)
- - [MsgVpnBridgeRemoteMsgVpnCollections](docs/MsgVpnBridgeRemoteMsgVpnCollections.md)
  - [MsgVpnBridgeRemoteMsgVpnLinks](docs/MsgVpnBridgeRemoteMsgVpnLinks.md)
  - [MsgVpnBridgeRemoteMsgVpnResponse](docs/MsgVpnBridgeRemoteMsgVpnResponse.md)
  - [MsgVpnBridgeRemoteMsgVpnsResponse](docs/MsgVpnBridgeRemoteMsgVpnsResponse.md)
  - [MsgVpnBridgeRemoteSubscription](docs/MsgVpnBridgeRemoteSubscription.md)
- - [MsgVpnBridgeRemoteSubscriptionCollections](docs/MsgVpnBridgeRemoteSubscriptionCollections.md)
  - [MsgVpnBridgeRemoteSubscriptionLinks](docs/MsgVpnBridgeRemoteSubscriptionLinks.md)
  - [MsgVpnBridgeRemoteSubscriptionResponse](docs/MsgVpnBridgeRemoteSubscriptionResponse.md)
  - [MsgVpnBridgeRemoteSubscriptionsResponse](docs/MsgVpnBridgeRemoteSubscriptionsResponse.md)
  - [MsgVpnBridgeResponse](docs/MsgVpnBridgeResponse.md)
  - [MsgVpnBridgeTlsTrustedCommonName](docs/MsgVpnBridgeTlsTrustedCommonName.md)
- - [MsgVpnBridgeTlsTrustedCommonNameCollections](docs/MsgVpnBridgeTlsTrustedCommonNameCollections.md)
  - [MsgVpnBridgeTlsTrustedCommonNameLinks](docs/MsgVpnBridgeTlsTrustedCommonNameLinks.md)
  - [MsgVpnBridgeTlsTrustedCommonNameResponse](docs/MsgVpnBridgeTlsTrustedCommonNameResponse.md)
  - [MsgVpnBridgeTlsTrustedCommonNamesResponse](docs/MsgVpnBridgeTlsTrustedCommonNamesResponse.md)
@@ -642,39 +886,32 @@ Class | Method | HTTP request | Description
  - [MsgVpnClientCollectionsTransactedsessions](docs/MsgVpnClientCollectionsTransactedsessions.md)
  - [MsgVpnClientCollectionsTxflows](docs/MsgVpnClientCollectionsTxflows.md)
  - [MsgVpnClientConnection](docs/MsgVpnClientConnection.md)
- - [MsgVpnClientConnectionCollections](docs/MsgVpnClientConnectionCollections.md)
  - [MsgVpnClientConnectionLinks](docs/MsgVpnClientConnectionLinks.md)
  - [MsgVpnClientConnectionResponse](docs/MsgVpnClientConnectionResponse.md)
  - [MsgVpnClientConnectionsResponse](docs/MsgVpnClientConnectionsResponse.md)
  - [MsgVpnClientLinks](docs/MsgVpnClientLinks.md)
  - [MsgVpnClientProfile](docs/MsgVpnClientProfile.md)
- - [MsgVpnClientProfileCollections](docs/MsgVpnClientProfileCollections.md)
  - [MsgVpnClientProfileLinks](docs/MsgVpnClientProfileLinks.md)
  - [MsgVpnClientProfileResponse](docs/MsgVpnClientProfileResponse.md)
  - [MsgVpnClientProfilesResponse](docs/MsgVpnClientProfilesResponse.md)
  - [MsgVpnClientResponse](docs/MsgVpnClientResponse.md)
  - [MsgVpnClientRxFlow](docs/MsgVpnClientRxFlow.md)
- - [MsgVpnClientRxFlowCollections](docs/MsgVpnClientRxFlowCollections.md)
  - [MsgVpnClientRxFlowLinks](docs/MsgVpnClientRxFlowLinks.md)
  - [MsgVpnClientRxFlowResponse](docs/MsgVpnClientRxFlowResponse.md)
  - [MsgVpnClientRxFlowsResponse](docs/MsgVpnClientRxFlowsResponse.md)
  - [MsgVpnClientSubscription](docs/MsgVpnClientSubscription.md)
- - [MsgVpnClientSubscriptionCollections](docs/MsgVpnClientSubscriptionCollections.md)
  - [MsgVpnClientSubscriptionLinks](docs/MsgVpnClientSubscriptionLinks.md)
  - [MsgVpnClientSubscriptionResponse](docs/MsgVpnClientSubscriptionResponse.md)
  - [MsgVpnClientSubscriptionsResponse](docs/MsgVpnClientSubscriptionsResponse.md)
  - [MsgVpnClientTransactedSession](docs/MsgVpnClientTransactedSession.md)
- - [MsgVpnClientTransactedSessionCollections](docs/MsgVpnClientTransactedSessionCollections.md)
  - [MsgVpnClientTransactedSessionLinks](docs/MsgVpnClientTransactedSessionLinks.md)
  - [MsgVpnClientTransactedSessionResponse](docs/MsgVpnClientTransactedSessionResponse.md)
  - [MsgVpnClientTransactedSessionsResponse](docs/MsgVpnClientTransactedSessionsResponse.md)
  - [MsgVpnClientTxFlow](docs/MsgVpnClientTxFlow.md)
- - [MsgVpnClientTxFlowCollections](docs/MsgVpnClientTxFlowCollections.md)
  - [MsgVpnClientTxFlowLinks](docs/MsgVpnClientTxFlowLinks.md)
  - [MsgVpnClientTxFlowResponse](docs/MsgVpnClientTxFlowResponse.md)
  - [MsgVpnClientTxFlowsResponse](docs/MsgVpnClientTxFlowsResponse.md)
  - [MsgVpnClientUsername](docs/MsgVpnClientUsername.md)
- - [MsgVpnClientUsernameCollections](docs/MsgVpnClientUsernameCollections.md)
  - [MsgVpnClientUsernameLinks](docs/MsgVpnClientUsernameLinks.md)
  - [MsgVpnClientUsernameResponse](docs/MsgVpnClientUsernameResponse.md)
  - [MsgVpnClientUsernamesResponse](docs/MsgVpnClientUsernamesResponse.md)
@@ -704,7 +941,6 @@ Class | Method | HTTP request | Description
  - [MsgVpnCollectionsTopicendpointtemplates](docs/MsgVpnCollectionsTopicendpointtemplates.md)
  - [MsgVpnCollectionsTransactions](docs/MsgVpnCollectionsTransactions.md)
  - [MsgVpnConfigSyncRemoteNode](docs/MsgVpnConfigSyncRemoteNode.md)
- - [MsgVpnConfigSyncRemoteNodeCollections](docs/MsgVpnConfigSyncRemoteNodeCollections.md)
  - [MsgVpnConfigSyncRemoteNodeLinks](docs/MsgVpnConfigSyncRemoteNodeLinks.md)
  - [MsgVpnConfigSyncRemoteNodeResponse](docs/MsgVpnConfigSyncRemoteNodeResponse.md)
  - [MsgVpnConfigSyncRemoteNodesResponse](docs/MsgVpnConfigSyncRemoteNodesResponse.md)
@@ -721,7 +957,6 @@ Class | Method | HTTP request | Description
  - [MsgVpnDistributedCacheClusterGlobalCachingHomeClusterLinks](docs/MsgVpnDistributedCacheClusterGlobalCachingHomeClusterLinks.md)
  - [MsgVpnDistributedCacheClusterGlobalCachingHomeClusterResponse](docs/MsgVpnDistributedCacheClusterGlobalCachingHomeClusterResponse.md)
  - [MsgVpnDistributedCacheClusterGlobalCachingHomeClusterTopicPrefix](docs/MsgVpnDistributedCacheClusterGlobalCachingHomeClusterTopicPrefix.md)
- - [MsgVpnDistributedCacheClusterGlobalCachingHomeClusterTopicPrefixCollections](docs/MsgVpnDistributedCacheClusterGlobalCachingHomeClusterTopicPrefixCollections.md)
  - [MsgVpnDistributedCacheClusterGlobalCachingHomeClusterTopicPrefixLinks](docs/MsgVpnDistributedCacheClusterGlobalCachingHomeClusterTopicPrefixLinks.md)
  - [MsgVpnDistributedCacheClusterGlobalCachingHomeClusterTopicPrefixResponse](docs/MsgVpnDistributedCacheClusterGlobalCachingHomeClusterTopicPrefixResponse.md)
  - [MsgVpnDistributedCacheClusterGlobalCachingHomeClusterTopicPrefixesResponse](docs/MsgVpnDistributedCacheClusterGlobalCachingHomeClusterTopicPrefixesResponse.md)
@@ -734,12 +969,10 @@ Class | Method | HTTP request | Description
  - [MsgVpnDistributedCacheClusterInstanceLinks](docs/MsgVpnDistributedCacheClusterInstanceLinks.md)
  - [MsgVpnDistributedCacheClusterInstanceRate](docs/MsgVpnDistributedCacheClusterInstanceRate.md)
  - [MsgVpnDistributedCacheClusterInstanceRemoteGlobalCachingHomeCluster](docs/MsgVpnDistributedCacheClusterInstanceRemoteGlobalCachingHomeCluster.md)
- - [MsgVpnDistributedCacheClusterInstanceRemoteGlobalCachingHomeClusterCollections](docs/MsgVpnDistributedCacheClusterInstanceRemoteGlobalCachingHomeClusterCollections.md)
  - [MsgVpnDistributedCacheClusterInstanceRemoteGlobalCachingHomeClusterLinks](docs/MsgVpnDistributedCacheClusterInstanceRemoteGlobalCachingHomeClusterLinks.md)
  - [MsgVpnDistributedCacheClusterInstanceRemoteGlobalCachingHomeClusterResponse](docs/MsgVpnDistributedCacheClusterInstanceRemoteGlobalCachingHomeClusterResponse.md)
  - [MsgVpnDistributedCacheClusterInstanceRemoteGlobalCachingHomeClustersResponse](docs/MsgVpnDistributedCacheClusterInstanceRemoteGlobalCachingHomeClustersResponse.md)
  - [MsgVpnDistributedCacheClusterInstanceRemoteTopic](docs/MsgVpnDistributedCacheClusterInstanceRemoteTopic.md)
- - [MsgVpnDistributedCacheClusterInstanceRemoteTopicCollections](docs/MsgVpnDistributedCacheClusterInstanceRemoteTopicCollections.md)
  - [MsgVpnDistributedCacheClusterInstanceRemoteTopicLinks](docs/MsgVpnDistributedCacheClusterInstanceRemoteTopicLinks.md)
  - [MsgVpnDistributedCacheClusterInstanceRemoteTopicResponse](docs/MsgVpnDistributedCacheClusterInstanceRemoteTopicResponse.md)
  - [MsgVpnDistributedCacheClusterInstanceRemoteTopicsResponse](docs/MsgVpnDistributedCacheClusterInstanceRemoteTopicsResponse.md)
@@ -748,7 +981,6 @@ Class | Method | HTTP request | Description
  - [MsgVpnDistributedCacheClusterLinks](docs/MsgVpnDistributedCacheClusterLinks.md)
  - [MsgVpnDistributedCacheClusterResponse](docs/MsgVpnDistributedCacheClusterResponse.md)
  - [MsgVpnDistributedCacheClusterTopic](docs/MsgVpnDistributedCacheClusterTopic.md)
- - [MsgVpnDistributedCacheClusterTopicCollections](docs/MsgVpnDistributedCacheClusterTopicCollections.md)
  - [MsgVpnDistributedCacheClusterTopicLinks](docs/MsgVpnDistributedCacheClusterTopicLinks.md)
  - [MsgVpnDistributedCacheClusterTopicResponse](docs/MsgVpnDistributedCacheClusterTopicResponse.md)
  - [MsgVpnDistributedCacheClusterTopicsResponse](docs/MsgVpnDistributedCacheClusterTopicsResponse.md)
@@ -759,28 +991,23 @@ Class | Method | HTTP request | Description
  - [MsgVpnDistributedCacheResponse](docs/MsgVpnDistributedCacheResponse.md)
  - [MsgVpnDistributedCachesResponse](docs/MsgVpnDistributedCachesResponse.md)
  - [MsgVpnDmrBridge](docs/MsgVpnDmrBridge.md)
- - [MsgVpnDmrBridgeCollections](docs/MsgVpnDmrBridgeCollections.md)
  - [MsgVpnDmrBridgeLinks](docs/MsgVpnDmrBridgeLinks.md)
  - [MsgVpnDmrBridgeResponse](docs/MsgVpnDmrBridgeResponse.md)
  - [MsgVpnDmrBridgesResponse](docs/MsgVpnDmrBridgesResponse.md)
  - [MsgVpnJndiConnectionFactoriesResponse](docs/MsgVpnJndiConnectionFactoriesResponse.md)
  - [MsgVpnJndiConnectionFactory](docs/MsgVpnJndiConnectionFactory.md)
- - [MsgVpnJndiConnectionFactoryCollections](docs/MsgVpnJndiConnectionFactoryCollections.md)
  - [MsgVpnJndiConnectionFactoryLinks](docs/MsgVpnJndiConnectionFactoryLinks.md)
  - [MsgVpnJndiConnectionFactoryResponse](docs/MsgVpnJndiConnectionFactoryResponse.md)
  - [MsgVpnJndiQueue](docs/MsgVpnJndiQueue.md)
- - [MsgVpnJndiQueueCollections](docs/MsgVpnJndiQueueCollections.md)
  - [MsgVpnJndiQueueLinks](docs/MsgVpnJndiQueueLinks.md)
  - [MsgVpnJndiQueueResponse](docs/MsgVpnJndiQueueResponse.md)
  - [MsgVpnJndiQueuesResponse](docs/MsgVpnJndiQueuesResponse.md)
  - [MsgVpnJndiTopic](docs/MsgVpnJndiTopic.md)
- - [MsgVpnJndiTopicCollections](docs/MsgVpnJndiTopicCollections.md)
  - [MsgVpnJndiTopicLinks](docs/MsgVpnJndiTopicLinks.md)
  - [MsgVpnJndiTopicResponse](docs/MsgVpnJndiTopicResponse.md)
  - [MsgVpnJndiTopicsResponse](docs/MsgVpnJndiTopicsResponse.md)
  - [MsgVpnLinks](docs/MsgVpnLinks.md)
  - [MsgVpnMqttRetainCache](docs/MsgVpnMqttRetainCache.md)
- - [MsgVpnMqttRetainCacheCollections](docs/MsgVpnMqttRetainCacheCollections.md)
  - [MsgVpnMqttRetainCacheLinks](docs/MsgVpnMqttRetainCacheLinks.md)
  - [MsgVpnMqttRetainCacheResponse](docs/MsgVpnMqttRetainCacheResponse.md)
  - [MsgVpnMqttRetainCachesResponse](docs/MsgVpnMqttRetainCachesResponse.md)
@@ -791,7 +1018,6 @@ Class | Method | HTTP request | Description
  - [MsgVpnMqttSessionLinks](docs/MsgVpnMqttSessionLinks.md)
  - [MsgVpnMqttSessionResponse](docs/MsgVpnMqttSessionResponse.md)
  - [MsgVpnMqttSessionSubscription](docs/MsgVpnMqttSessionSubscription.md)
- - [MsgVpnMqttSessionSubscriptionCollections](docs/MsgVpnMqttSessionSubscriptionCollections.md)
  - [MsgVpnMqttSessionSubscriptionLinks](docs/MsgVpnMqttSessionSubscriptionLinks.md)
  - [MsgVpnMqttSessionSubscriptionResponse](docs/MsgVpnMqttSessionSubscriptionResponse.md)
  - [MsgVpnMqttSessionSubscriptionsResponse](docs/MsgVpnMqttSessionSubscriptionsResponse.md)
@@ -804,28 +1030,23 @@ Class | Method | HTTP request | Description
  - [MsgVpnQueueCollectionsTxflows](docs/MsgVpnQueueCollectionsTxflows.md)
  - [MsgVpnQueueLinks](docs/MsgVpnQueueLinks.md)
  - [MsgVpnQueueMsg](docs/MsgVpnQueueMsg.md)
- - [MsgVpnQueueMsgCollections](docs/MsgVpnQueueMsgCollections.md)
  - [MsgVpnQueueMsgLinks](docs/MsgVpnQueueMsgLinks.md)
  - [MsgVpnQueueMsgResponse](docs/MsgVpnQueueMsgResponse.md)
  - [MsgVpnQueueMsgsResponse](docs/MsgVpnQueueMsgsResponse.md)
  - [MsgVpnQueuePrioritiesResponse](docs/MsgVpnQueuePrioritiesResponse.md)
  - [MsgVpnQueuePriority](docs/MsgVpnQueuePriority.md)
- - [MsgVpnQueuePriorityCollections](docs/MsgVpnQueuePriorityCollections.md)
  - [MsgVpnQueuePriorityLinks](docs/MsgVpnQueuePriorityLinks.md)
  - [MsgVpnQueuePriorityResponse](docs/MsgVpnQueuePriorityResponse.md)
  - [MsgVpnQueueResponse](docs/MsgVpnQueueResponse.md)
  - [MsgVpnQueueSubscription](docs/MsgVpnQueueSubscription.md)
- - [MsgVpnQueueSubscriptionCollections](docs/MsgVpnQueueSubscriptionCollections.md)
  - [MsgVpnQueueSubscriptionLinks](docs/MsgVpnQueueSubscriptionLinks.md)
  - [MsgVpnQueueSubscriptionResponse](docs/MsgVpnQueueSubscriptionResponse.md)
  - [MsgVpnQueueSubscriptionsResponse](docs/MsgVpnQueueSubscriptionsResponse.md)
  - [MsgVpnQueueTemplate](docs/MsgVpnQueueTemplate.md)
- - [MsgVpnQueueTemplateCollections](docs/MsgVpnQueueTemplateCollections.md)
  - [MsgVpnQueueTemplateLinks](docs/MsgVpnQueueTemplateLinks.md)
  - [MsgVpnQueueTemplateResponse](docs/MsgVpnQueueTemplateResponse.md)
  - [MsgVpnQueueTemplatesResponse](docs/MsgVpnQueueTemplatesResponse.md)
  - [MsgVpnQueueTxFlow](docs/MsgVpnQueueTxFlow.md)
- - [MsgVpnQueueTxFlowCollections](docs/MsgVpnQueueTxFlowCollections.md)
  - [MsgVpnQueueTxFlowLinks](docs/MsgVpnQueueTxFlowLinks.md)
  - [MsgVpnQueueTxFlowResponse](docs/MsgVpnQueueTxFlowResponse.md)
  - [MsgVpnQueueTxFlowsResponse](docs/MsgVpnQueueTxFlowsResponse.md)
@@ -836,14 +1057,12 @@ Class | Method | HTTP request | Description
  - [MsgVpnReplayLogCollectionsMsgs](docs/MsgVpnReplayLogCollectionsMsgs.md)
  - [MsgVpnReplayLogLinks](docs/MsgVpnReplayLogLinks.md)
  - [MsgVpnReplayLogMsg](docs/MsgVpnReplayLogMsg.md)
- - [MsgVpnReplayLogMsgCollections](docs/MsgVpnReplayLogMsgCollections.md)
  - [MsgVpnReplayLogMsgLinks](docs/MsgVpnReplayLogMsgLinks.md)
  - [MsgVpnReplayLogMsgResponse](docs/MsgVpnReplayLogMsgResponse.md)
  - [MsgVpnReplayLogMsgsResponse](docs/MsgVpnReplayLogMsgsResponse.md)
  - [MsgVpnReplayLogResponse](docs/MsgVpnReplayLogResponse.md)
  - [MsgVpnReplayLogsResponse](docs/MsgVpnReplayLogsResponse.md)
  - [MsgVpnReplicatedTopic](docs/MsgVpnReplicatedTopic.md)
- - [MsgVpnReplicatedTopicCollections](docs/MsgVpnReplicatedTopicCollections.md)
  - [MsgVpnReplicatedTopicLinks](docs/MsgVpnReplicatedTopicLinks.md)
  - [MsgVpnReplicatedTopicResponse](docs/MsgVpnReplicatedTopicResponse.md)
  - [MsgVpnReplicatedTopicsResponse](docs/MsgVpnReplicatedTopicsResponse.md)
@@ -854,7 +1073,6 @@ Class | Method | HTTP request | Description
  - [MsgVpnRestDeliveryPointCollectionsRestconsumers](docs/MsgVpnRestDeliveryPointCollectionsRestconsumers.md)
  - [MsgVpnRestDeliveryPointLinks](docs/MsgVpnRestDeliveryPointLinks.md)
  - [MsgVpnRestDeliveryPointQueueBinding](docs/MsgVpnRestDeliveryPointQueueBinding.md)
- - [MsgVpnRestDeliveryPointQueueBindingCollections](docs/MsgVpnRestDeliveryPointQueueBindingCollections.md)
  - [MsgVpnRestDeliveryPointQueueBindingLinks](docs/MsgVpnRestDeliveryPointQueueBindingLinks.md)
  - [MsgVpnRestDeliveryPointQueueBindingResponse](docs/MsgVpnRestDeliveryPointQueueBindingResponse.md)
  - [MsgVpnRestDeliveryPointQueueBindingsResponse](docs/MsgVpnRestDeliveryPointQueueBindingsResponse.md)
@@ -866,13 +1084,11 @@ Class | Method | HTTP request | Description
  - [MsgVpnRestDeliveryPointRestConsumerCounter](docs/MsgVpnRestDeliveryPointRestConsumerCounter.md)
  - [MsgVpnRestDeliveryPointRestConsumerLinks](docs/MsgVpnRestDeliveryPointRestConsumerLinks.md)
  - [MsgVpnRestDeliveryPointRestConsumerOauthJwtClaim](docs/MsgVpnRestDeliveryPointRestConsumerOauthJwtClaim.md)
- - [MsgVpnRestDeliveryPointRestConsumerOauthJwtClaimCollections](docs/MsgVpnRestDeliveryPointRestConsumerOauthJwtClaimCollections.md)
  - [MsgVpnRestDeliveryPointRestConsumerOauthJwtClaimLinks](docs/MsgVpnRestDeliveryPointRestConsumerOauthJwtClaimLinks.md)
  - [MsgVpnRestDeliveryPointRestConsumerOauthJwtClaimResponse](docs/MsgVpnRestDeliveryPointRestConsumerOauthJwtClaimResponse.md)
  - [MsgVpnRestDeliveryPointRestConsumerOauthJwtClaimsResponse](docs/MsgVpnRestDeliveryPointRestConsumerOauthJwtClaimsResponse.md)
  - [MsgVpnRestDeliveryPointRestConsumerResponse](docs/MsgVpnRestDeliveryPointRestConsumerResponse.md)
  - [MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonName](docs/MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonName.md)
- - [MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonNameCollections](docs/MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonNameCollections.md)
  - [MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonNameLinks](docs/MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonNameLinks.md)
  - [MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonNameResponse](docs/MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonNameResponse.md)
  - [MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonNamesResponse](docs/MsgVpnRestDeliveryPointRestConsumerTlsTrustedCommonNamesResponse.md)
@@ -885,23 +1101,19 @@ Class | Method | HTTP request | Description
  - [MsgVpnTopicEndpointCollectionsTxflows](docs/MsgVpnTopicEndpointCollectionsTxflows.md)
  - [MsgVpnTopicEndpointLinks](docs/MsgVpnTopicEndpointLinks.md)
  - [MsgVpnTopicEndpointMsg](docs/MsgVpnTopicEndpointMsg.md)
- - [MsgVpnTopicEndpointMsgCollections](docs/MsgVpnTopicEndpointMsgCollections.md)
  - [MsgVpnTopicEndpointMsgLinks](docs/MsgVpnTopicEndpointMsgLinks.md)
  - [MsgVpnTopicEndpointMsgResponse](docs/MsgVpnTopicEndpointMsgResponse.md)
  - [MsgVpnTopicEndpointMsgsResponse](docs/MsgVpnTopicEndpointMsgsResponse.md)
  - [MsgVpnTopicEndpointPrioritiesResponse](docs/MsgVpnTopicEndpointPrioritiesResponse.md)
  - [MsgVpnTopicEndpointPriority](docs/MsgVpnTopicEndpointPriority.md)
- - [MsgVpnTopicEndpointPriorityCollections](docs/MsgVpnTopicEndpointPriorityCollections.md)
  - [MsgVpnTopicEndpointPriorityLinks](docs/MsgVpnTopicEndpointPriorityLinks.md)
  - [MsgVpnTopicEndpointPriorityResponse](docs/MsgVpnTopicEndpointPriorityResponse.md)
  - [MsgVpnTopicEndpointResponse](docs/MsgVpnTopicEndpointResponse.md)
  - [MsgVpnTopicEndpointTemplate](docs/MsgVpnTopicEndpointTemplate.md)
- - [MsgVpnTopicEndpointTemplateCollections](docs/MsgVpnTopicEndpointTemplateCollections.md)
  - [MsgVpnTopicEndpointTemplateLinks](docs/MsgVpnTopicEndpointTemplateLinks.md)
  - [MsgVpnTopicEndpointTemplateResponse](docs/MsgVpnTopicEndpointTemplateResponse.md)
  - [MsgVpnTopicEndpointTemplatesResponse](docs/MsgVpnTopicEndpointTemplatesResponse.md)
  - [MsgVpnTopicEndpointTxFlow](docs/MsgVpnTopicEndpointTxFlow.md)
- - [MsgVpnTopicEndpointTxFlowCollections](docs/MsgVpnTopicEndpointTxFlowCollections.md)
  - [MsgVpnTopicEndpointTxFlowLinks](docs/MsgVpnTopicEndpointTxFlowLinks.md)
  - [MsgVpnTopicEndpointTxFlowResponse](docs/MsgVpnTopicEndpointTxFlowResponse.md)
  - [MsgVpnTopicEndpointTxFlowsResponse](docs/MsgVpnTopicEndpointTxFlowsResponse.md)
@@ -911,13 +1123,11 @@ Class | Method | HTTP request | Description
  - [MsgVpnTransactionCollectionsConsumermsgs](docs/MsgVpnTransactionCollectionsConsumermsgs.md)
  - [MsgVpnTransactionCollectionsPublishermsgs](docs/MsgVpnTransactionCollectionsPublishermsgs.md)
  - [MsgVpnTransactionConsumerMsg](docs/MsgVpnTransactionConsumerMsg.md)
- - [MsgVpnTransactionConsumerMsgCollections](docs/MsgVpnTransactionConsumerMsgCollections.md)
  - [MsgVpnTransactionConsumerMsgLinks](docs/MsgVpnTransactionConsumerMsgLinks.md)
  - [MsgVpnTransactionConsumerMsgResponse](docs/MsgVpnTransactionConsumerMsgResponse.md)
  - [MsgVpnTransactionConsumerMsgsResponse](docs/MsgVpnTransactionConsumerMsgsResponse.md)
  - [MsgVpnTransactionLinks](docs/MsgVpnTransactionLinks.md)
  - [MsgVpnTransactionPublisherMsg](docs/MsgVpnTransactionPublisherMsg.md)
- - [MsgVpnTransactionPublisherMsgCollections](docs/MsgVpnTransactionPublisherMsgCollections.md)
  - [MsgVpnTransactionPublisherMsgLinks](docs/MsgVpnTransactionPublisherMsgLinks.md)
  - [MsgVpnTransactionPublisherMsgResponse](docs/MsgVpnTransactionPublisherMsgResponse.md)
  - [MsgVpnTransactionPublisherMsgsResponse](docs/MsgVpnTransactionPublisherMsgsResponse.md)
@@ -930,35 +1140,55 @@ Class | Method | HTTP request | Description
  - [SempPaging](docs/SempPaging.md)
  - [SempRequest](docs/SempRequest.md)
  - [Session](docs/Session.md)
- - [SessionCollections](docs/SessionCollections.md)
  - [SessionLinks](docs/SessionLinks.md)
  - [SessionResponse](docs/SessionResponse.md)
  - [SessionsResponse](docs/SessionsResponse.md)
  - [StandardDomainCertAuthoritiesResponse](docs/StandardDomainCertAuthoritiesResponse.md)
  - [StandardDomainCertAuthority](docs/StandardDomainCertAuthority.md)
- - [StandardDomainCertAuthorityCollections](docs/StandardDomainCertAuthorityCollections.md)
  - [StandardDomainCertAuthorityLinks](docs/StandardDomainCertAuthorityLinks.md)
  - [StandardDomainCertAuthorityResponse](docs/StandardDomainCertAuthorityResponse.md)
  - [VirtualHostname](docs/VirtualHostname.md)
- - [VirtualHostnameCollections](docs/VirtualHostnameCollections.md)
  - [VirtualHostnameLinks](docs/VirtualHostnameLinks.md)
  - [VirtualHostnameResponse](docs/VirtualHostnameResponse.md)
  - [VirtualHostnamesResponse](docs/VirtualHostnamesResponse.md)
 
+
 ## Documentation For Authorization
 
-## basicAuth
+
+
+### basicAuth
+
 - **Type**: HTTP basic authentication
 
 Example
+
 ```golang
 auth := context.WithValue(context.Background(), sw.ContextBasicAuth, sw.BasicAuth{
-	UserName: "username",
-	Password: "password",
+    UserName: "username",
+    Password: "password",
 })
 r, err := client.Service.Operation(auth, args)
 ```
 
+
+## Documentation for Utility Methods
+
+Due to the fact that model structure members are all pointers, this package contains
+a number of utility functions to easily obtain pointers to values of basic types.
+Each of these functions takes a value of the given basic type and returns a pointer to it:
+
+* `PtrBool`
+* `PtrInt`
+* `PtrInt32`
+* `PtrInt64`
+* `PtrFloat`
+* `PtrFloat32`
+* `PtrFloat64`
+* `PtrString`
+* `PtrTime`
+
 ## Author
 
 support@solace.com
+

@@ -1,9 +1,56 @@
 # MsgVpnReplayLogCollections
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Msgs** | [***MsgVpnReplayLogCollectionsMsgs**](MsgVpnReplayLogCollectionsMsgs.md) |  | [optional] [default to null]
+**Msgs** | Pointer to [**MsgVpnReplayLogCollectionsMsgs**](MsgVpnReplayLogCollectionsMsgs.md) |  | [optional] 
+
+## Methods
+
+### NewMsgVpnReplayLogCollections
+
+`func NewMsgVpnReplayLogCollections() *MsgVpnReplayLogCollections`
+
+NewMsgVpnReplayLogCollections instantiates a new MsgVpnReplayLogCollections object
+This constructor will assign default values to properties that have it defined,
+and makes sure properties required by API are set, but the set of arguments
+will change when the set of required properties is changed
+
+### NewMsgVpnReplayLogCollectionsWithDefaults
+
+`func NewMsgVpnReplayLogCollectionsWithDefaults() *MsgVpnReplayLogCollections`
+
+NewMsgVpnReplayLogCollectionsWithDefaults instantiates a new MsgVpnReplayLogCollections object
+This constructor will only assign default values to properties that have it defined,
+but it doesn't guarantee that properties required by API are set
+
+### GetMsgs
+
+`func (o *MsgVpnReplayLogCollections) GetMsgs() MsgVpnReplayLogCollectionsMsgs`
+
+GetMsgs returns the Msgs field if non-nil, zero value otherwise.
+
+### GetMsgsOk
+
+`func (o *MsgVpnReplayLogCollections) GetMsgsOk() (*MsgVpnReplayLogCollectionsMsgs, bool)`
+
+GetMsgsOk returns a tuple with the Msgs field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetMsgs
+
+`func (o *MsgVpnReplayLogCollections) SetMsgs(v MsgVpnReplayLogCollectionsMsgs)`
+
+SetMsgs sets Msgs field to given value.
+
+### HasMsgs
+
+`func (o *MsgVpnReplayLogCollections) HasMsgs() bool`
+
+HasMsgs returns a boolean if a field has been set.
+
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
 

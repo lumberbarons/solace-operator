@@ -33,11 +33,13 @@ type SolaceQueueSpec struct {
 
 // SolaceQueueStatus defines the observed state of SolaceQueue
 type SolaceQueueStatus struct {
-	Ready bool `json:"ready,omitempty"`
+	OperationalState string `json:"operationalState,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Access Type",type="string",JSONPath=".spec.accessType",description="The access type of the queue"
+//+kubebuilder:printcolumn:name="State",type="string",JSONPath=".status.operationalState",description="The operational state of the queue"
 
 // SolaceQueue is the Schema for the solacequeues API
 type SolaceQueue struct {

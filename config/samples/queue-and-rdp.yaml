@@ -14,8 +14,8 @@ metadata:
 spec:
   accessType: non-exclusive
   topicSubscriptions:
-    - test/topic1
-    - test/topic2
+    - test/topic3
+    - test/topic4
 ---
 apiVersion: solace.lmbrn.ca/v1alpha1
 kind: SolaceRdp
@@ -23,11 +23,10 @@ metadata:
   name: test-rdp
 spec:
   consumers:
-    - host: example.com
+    - host: webhook.site
       tlsEnabled: true
-      connectionCount: 3
   queueBindings:
     - queueName: test-queue-1
-      postRequestTarget: /test-one
+      postRequestTarget: /d078c134-0dcc-497a-ae54-644d16d6e8fe
     - queueName: test-queue-2
-      postRequestTarget: /test-two
+      postRequestTarget: /d078c134-0dcc-497a-ae54-644d16d6e8fe
