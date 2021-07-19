@@ -24,9 +24,34 @@ metadata:
 spec:
   consumers:
     - host: webhook.site
-      tlsEnabled: true
+      tlsEnabled: false
+      connectionCount: 5
   queueBindings:
     - queueName: test-queue-1
       postRequestTarget: /d078c134-0dcc-497a-ae54-644d16d6e8fe
     - queueName: test-queue-2
+      postRequestTarget: /d078c134-0dcc-497a-ae54-644d16d6e8fe
+---
+apiVersion: solace.lmbrn.ca/v1alpha1
+kind: SolaceQueue
+metadata:
+  name: test-queue-3
+spec:
+  accessType: exclusive
+  topicSubscriptions:
+    - test/topic5
+    - test/topic6
+    - test/topic7
+---
+apiVersion: solace.lmbrn.ca/v1alpha1
+kind: SolaceRdp
+metadata:
+  name: test-rdp-2
+spec:
+  consumers:
+    - host: webhook.site
+      tlsEnabled: true
+      connectionCount: 2
+  queueBindings:
+    - queueName: test-queue-3
       postRequestTarget: /d078c134-0dcc-497a-ae54-644d16d6e8fe

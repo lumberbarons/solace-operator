@@ -162,9 +162,9 @@ func (r *SolaceRdpReconciler) reconcileCreateOrUpdate(ctx context.Context, solac
 		return ctrl.Result{}, err
 	}
 
-	solacerdp.Status.OperationalState = "Down"
+	solacerdp.Status.OperationalState = "down"
 	if *sempResponse.Data.Up {
-		solacerdp.Status.OperationalState = "Up"
+		solacerdp.Status.OperationalState = "up"
 	}
 
 	solacerdp.Status.LastFailureReason = *sempResponse.Data.LastFailureReason
@@ -174,6 +174,11 @@ func (r *SolaceRdpReconciler) reconcileCreateOrUpdate(ctx context.Context, solac
 	if err != nil {
 		log.Error(err, "Failed to update SolaceRdp status")
 		return ctrl.Result{}, err
+	}
+
+	if solacerdp.Status.OperationalState == "down" {
+		// if down then check again in 10 seconds
+		return ctrl.Result{RequeueAfter: time.Second * 10}, nil
 	}
 
 	return ctrl.Result{}, nil
@@ -279,7 +284,7 @@ func (r *SolaceRdpReconciler) createOrUpdateRdpConsumer(ctx context.Context, sol
 
 	rdpConsumerName := rdpHttpMethod + "-" + consumer.Host + "-" + strconv.Itoa(consumer.Port)
 
-	_, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnRestDeliveryPointRestConsumer(r.sempAuth,
+	sempResponse, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnRestDeliveryPointRestConsumer(r.sempAuth,
 		r.msgVpnName, rdpName, rdpConsumerName).Execute()
 
 	if httpResponse.StatusCode != 200 {
@@ -295,27 +300,33 @@ func (r *SolaceRdpReconciler) createOrUpdateRdpConsumer(ctx context.Context, sol
 				"RdpName", rdpName, "RdpConsumerName", rdpConsumerName)
 		}
 	} else {
-		/* if sempResponse.Data.OutgoingConnectionCount != rdpConnCount ||
-			sempResponse.Data.TlsEnabled != consumer.TlsEnabled {
-			rdpConsumer := semp.MsgVpnRestDeliveryPointRestConsumer{RestConsumerName: rdpConsumerName, Enabled: false}
+		rdpConsumerResp := sempResponse.GetData()
+
+		if *rdpConsumerResp.OutgoingConnectionCount != rdpConnCount || *rdpConsumerResp.TlsEnabled != consumer.TlsEnabled {
+			rdpEnabled = false
+
+			rdpConsumer := semp.MsgVpnRestDeliveryPointRestConsumer{RestConsumerName: &rdpConsumerName, Enabled: &rdpEnabled}
 
 			log.Info("Disabling rdp consumer", "RdpName", rdpName, "RdpConsumer", rdpConsumer)
 			_, _, err := r.sempClient.RestDeliveryPointApi.UpdateMsgVpnRestDeliveryPointRestConsumer(
-				r.sempAuth, rdpConsumer, r.msgVpnName, rdpName, rdpConsumerName, nil)
+				r.sempAuth, r.msgVpnName, rdpName, rdpConsumerName).Body(rdpConsumer).Execute()
 			if err != nil {
 				return err
 			}
 
-			rdpConsumer = semp.MsgVpnRestDeliveryPointRestConsumer{RestConsumerName: rdpConsumerName,
-				Enabled: true, OutgoingConnectionCount: rdpConnCount, TlsEnabled: consumer.TlsEnabled}
+			rdpEnabled = true
+
+			rdpConsumer = semp.MsgVpnRestDeliveryPointRestConsumer{RestConsumerName: &rdpConsumerName,
+				Enabled: &rdpEnabled, OutgoingConnectionCount: &rdpConnCount, TlsEnabled: &consumer.TlsEnabled}
 
 			log.Info("Updating rdp consumer", "RdpName", rdpName, "RdpConsumer", rdpConsumer)
 			_, _, err = r.sempClient.RestDeliveryPointApi.UpdateMsgVpnRestDeliveryPointRestConsumer(
-				r.sempAuth, rdpConsumer, r.msgVpnName, rdpName, rdpConsumerName, nil)
+				r.sempAuth, r.msgVpnName, rdpName, rdpConsumerName).Body(rdpConsumer).Execute()
 			if err != nil {
-				return err
+				return solaceError(ctx, err, "Failed to update rdp consumer", "MsgVpnName", r.msgVpnName,
+					"RdpName", rdpName, "RdpConsumerName", rdpConsumerName)
 			}
-		} */
+		}
 	}
 
 	return nil
@@ -327,26 +338,44 @@ func (r *SolaceRdpReconciler) createOrUpdateRdp(ctx context.Context, solacerdp *
 	rdpName := solacerdp.ObjectMeta.Name
 	rdpEnabled := true
 
-	_, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnRestDeliveryPoint(r.sempAuth, r.msgVpnName, rdpName).Execute()
+	sempResponse, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnRestDeliveryPoint(r.sempAuth, r.msgVpnName, rdpName).Execute()
 
 	if httpResponse.StatusCode != 200 {
 		rdp := semp.MsgVpnRestDeliveryPoint{RestDeliveryPointName: &rdpName,
 			ClientProfileName: &solacerdp.Spec.ClientProfile, Enabled: &rdpEnabled}
 
-		log.Info("Creating rdp", "RdpName", rdpName)
+		log.Info("Creating rdp", "MsgVpnName", r.msgVpnName, "Rdp", rdp)
 		_, _, err := r.sempClient.RestDeliveryPointApi.CreateMsgVpnRestDeliveryPoint(r.sempAuth, r.msgVpnName).Body(rdp).Execute()
 		if err != nil {
 			return solaceError(ctx, err, "Failed to create rdp", "MsgVpnName", r.msgVpnName, "RdpName", rdpName)
 		}
 	} else {
-		/* if sempResponse.Data.ClientProfileName != solacerdp.Spec.ClientProfile {
-			log.Info("Updating rdp", "RdpName", rdpName)
-			_, _, err := r.sempClient.RestDeliveryPointApi.UpdateMsgVpnRestDeliveryPoint(r.sempAuth, rdp, r.msgVpnName, rdpName, nil)
+		rdpResp := sempResponse.GetData()
+
+		if *rdpResp.ClientProfileName != solacerdp.Spec.ClientProfile {
+			rdpEnabled = false
+
+			rdp := semp.MsgVpnRestDeliveryPoint{RestDeliveryPointName: &rdpName, Enabled: &rdpEnabled}
+
+			log.Info("Disabling rdp", "MsgVpnName", r.msgVpnName, "Rdp", rdp)
+
+			_, _, err := r.sempClient.RestDeliveryPointApi.UpdateMsgVpnRestDeliveryPoint(r.sempAuth, r.msgVpnName, rdpName).Body(rdp).Execute()
 			if err != nil {
-				log.Error(err, "Failed to update rdp", "MsgVpnName", r.msgVpnName, "RdpName", rdpName)
-				return err
+				return solaceError(ctx, err, "Failed to disable rdp", "MsgVpnName", r.msgVpnName, "RdpName", rdpName)
 			}
-		} */
+
+			rdpEnabled = true
+
+			rdp = semp.MsgVpnRestDeliveryPoint{RestDeliveryPointName: &rdpName,
+				ClientProfileName: &solacerdp.Spec.ClientProfile, Enabled: &rdpEnabled}
+
+			log.Info("Updating rdp", "MsgVpnName", r.msgVpnName, "Rdp", rdp)
+
+			_, _, err = r.sempClient.RestDeliveryPointApi.UpdateMsgVpnRestDeliveryPoint(r.sempAuth, r.msgVpnName, rdpName).Body(rdp).Execute()
+			if err != nil {
+				return solaceError(ctx, err, "Failed to update rdp", "MsgVpnName", r.msgVpnName, "RdpName", rdpName)
+			}
+		}
 	}
 
 	return nil

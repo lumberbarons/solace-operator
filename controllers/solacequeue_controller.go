@@ -84,7 +84,7 @@ func (r *SolaceQueueReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, err
 	}
 
-	solacequeue.Status.OperationalState = "Up"
+	solacequeue.Status.OperationalState = "up"
 
 	err = r.Status().Update(ctx, solacequeue)
 	if err != nil {
@@ -129,41 +129,79 @@ func (r *SolaceQueueReconciler) createOrUpdateQueue(ctx context.Context, solaceq
 	log := ctrllog.FromContext(ctx)
 
 	queueName := solacequeue.ObjectMeta.Name
-	topicSubs := solacequeue.Spec.TopicSubscriptions
-	enabled := true
+	ingressEnabled := true
+	egressEnabled := true
 
-	_, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnQueue(r.sempAuth, r.msgVpnName, queueName).Execute()
+	queueResponse, httpResponse, _ := r.sempClient.MsgVpnApi.GetMsgVpnQueue(r.sempAuth, r.msgVpnName, queueName).Execute()
 
 	if httpResponse.StatusCode != 200 {
-		queue := semp.MsgVpnQueue{QueueName: &queueName, IngressEnabled: &enabled, EgressEnabled: &enabled,
-			Permission: &solacequeue.Spec.NonOwnerPermission, Owner: &solacequeue.Spec.Owner,
-			AccessType: &solacequeue.Spec.AccessType}
-		log.Info("Creating queue", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
+		queue := semp.MsgVpnQueue{QueueName: &queueName, IngressEnabled: &ingressEnabled,
+			EgressEnabled: &egressEnabled, AccessType: &solacequeue.Spec.AccessType,
+			Permission: &solacequeue.Spec.NonOwnerPermission, Owner: &solacequeue.Spec.Owner}
+		log.Info("Creating queue", "MsgVpnName", r.msgVpnName, "Queue", queue)
 		_, _, err := r.sempClient.MsgVpnApi.CreateMsgVpnQueue(r.sempAuth, r.msgVpnName).Body(queue).Execute()
 		if err != nil {
-			log.Error(err, "Failed to create queue", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
-			return err
+			return solaceError(ctx, err, "Failed to create queue", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
 		}
 	} else {
-		/* log.Info("Updating queue", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
-		_, _, err := r.sempClient.MsgVpnApi.UpdateMsgVpnQueue(r.sempAuth, queue, r.msgVpnName, queueName, nil)
-		if err != nil {
-			log.Error(err, "Failed to update queue", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
-			return err
-		} */
+		if queueResponse.Data.GetAccessType() != solacequeue.Spec.AccessType ||
+			queueResponse.Data.GetPermission() != solacequeue.Spec.NonOwnerPermission ||
+			queueResponse.Data.GetOwner() != solacequeue.Spec.Owner {
+
+			egressEnabled = false
+			err := r.setQueueState(ctx, queueName, &egressEnabled, &ingressEnabled)
+			if err != nil {
+				return err
+			}
+
+			egressEnabled = true
+
+			queue := semp.MsgVpnQueue{QueueName: &queueName, EgressEnabled: &egressEnabled,
+				Permission: &solacequeue.Spec.NonOwnerPermission, Owner: &solacequeue.Spec.Owner,
+				AccessType: &solacequeue.Spec.AccessType}
+
+			log.Info("Setting state on queue", "MsgVpnName", r.msgVpnName, "Queue", queue)
+
+			_, _, err = r.sempClient.MsgVpnApi.UpdateMsgVpnQueue(r.sempAuth, r.msgVpnName, queueName).Body(queue).Execute()
+			if err != nil {
+				return solaceError(ctx, err, "Failed to update queue", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
+			}
+		}
 	}
 
-	sempResponse, _, err := r.sempClient.MsgVpnApi.GetMsgVpnQueueSubscriptions(r.sempAuth,
+	return r.createOrDeleteTopicSubs(ctx, solacequeue)
+}
+
+func (r *SolaceQueueReconciler) setQueueState(ctx context.Context, queueName string, egressEnabled *bool, ingressEnabled *bool) error {
+	log := ctrllog.FromContext(ctx)
+
+	queue := semp.MsgVpnQueue{QueueName: &queueName, IngressEnabled: ingressEnabled, EgressEnabled: egressEnabled}
+
+	log.Info("Setting state on queue", "MsgVpnName", r.msgVpnName, "Queue", queue)
+
+	_, _, err := r.sempClient.MsgVpnApi.UpdateMsgVpnQueue(r.sempAuth, r.msgVpnName, queueName).Body(queue).Execute()
+	if err != nil {
+		return solaceError(ctx, err, "Failed to disable egress on queue", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
+	}
+
+	return nil
+}
+
+func (r *SolaceQueueReconciler) createOrDeleteTopicSubs(ctx context.Context, solacequeue *solacev1alpha1.SolaceQueue) error {
+	log := ctrllog.FromContext(ctx)
+
+	queueName := solacequeue.ObjectMeta.Name
+	topicSubs := solacequeue.Spec.TopicSubscriptions
+
+	subsResponse, _, err := r.sempClient.MsgVpnApi.GetMsgVpnQueueSubscriptions(r.sempAuth,
 		r.msgVpnName, queueName).Execute()
 
 	if err != nil {
-		log.Error(err, "Failed to get queue topic subscriptions", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
-		return err
+		return solaceError(ctx, err, "Failed to get queue topic subscriptions", "MsgVpnName", r.msgVpnName, "QueueName", queueName)
 	}
 
 	var exTopicSubs []string
-	for idx := range *sempResponse.Data {
-		exTopicSub := (*sempResponse.Data)[idx]
+	for _, exTopicSub := range subsResponse.GetData() {
 		exTopicSubs = append(exTopicSubs, *exTopicSub.SubscriptionTopic)
 	}
 
@@ -174,13 +212,9 @@ func (r *SolaceQueueReconciler) createOrUpdateQueue(ctx context.Context, solaceq
 			_, _, err := r.sempClient.MsgVpnApi.CreateMsgVpnQueueSubscription(r.sempAuth,
 				r.msgVpnName, queueName).Body(semp.MsgVpnQueueSubscription{SubscriptionTopic: &topicSub}).Execute()
 			if err != nil {
-				log.Error(err, "Failed to create queue topic subscription", "MsgVpnName",
+				return solaceError(ctx, err, "Failed to create queue topic subscription", "MsgVpnName",
 					r.msgVpnName, "QueueName", queueName, "TopicSubscription", topicSub)
-				return err
 			}
-		} else {
-			/* log.Info("Skip topic subcription on queue, already exists", "MsgVpnName", r.msgVpnName,
-			"TopicSubscription", topicSub, "QueueName", queueName) */
 		}
 	}
 
@@ -191,9 +225,8 @@ func (r *SolaceQueueReconciler) createOrUpdateQueue(ctx context.Context, solaceq
 			_, _, err := r.sempClient.MsgVpnApi.DeleteMsgVpnQueueSubscription(r.sempAuth, r.msgVpnName,
 				queueName, url.PathEscape(exTopicSub)).Execute()
 			if err != nil {
-				log.Error(err, "Failed to delete queue topic subscription", "MsgVpnName",
+				return solaceError(ctx, err, "Failed to delete queue topic subscription", "MsgVpnName",
 					r.msgVpnName, "QueueName", queueName, "TopicSubscription", exTopicSub)
-				return err
 			}
 		}
 	}
