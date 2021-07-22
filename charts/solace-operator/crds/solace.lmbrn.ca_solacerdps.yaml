@@ -16,7 +16,24 @@ spec:
     singular: solacerdp
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: The client profile used by the RDP
+      jsonPath: .spec.clientProfile
+      name: Client Profile
+      type: string
+    - description: The operational state of the RDP
+      jsonPath: .status.operationalState
+      name: State
+      type: string
+    - description: The reason for the last failure
+      jsonPath: .status.lastFailureReason
+      name: Last Failure Reason
+      type: string
+    - description: The time of the last failure
+      jsonPath: .status.lastFailureTime
+      name: Last Failure Time
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: SolaceRdp is the Schema for the solacerdps API
